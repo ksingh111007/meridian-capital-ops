@@ -31,6 +31,11 @@ npm run build          # must pass before committing significant work
 
 ## Ground rules
 
+- **Strive for code simplicity and reusability.** Prefer the smallest change
+  that works; reuse the shared UI kit (`src/components/ui/`), the data-layer
+  accessors, and existing patterns before writing anything new. If a new
+  abstraction is needed, make it once, make it shared, and follow
+  `meridian-capital-ops/docs/CONVENTIONS.md`.
 - The backend does not exist yet. Every API call is mocked by one JSON file in
   `meridian-capital-ops/src/mocks/` behind `src/lib/data.ts`. Backend work
   starts at `meridian-capital-ops/docs/BACKEND_TODO.md` and must honor
