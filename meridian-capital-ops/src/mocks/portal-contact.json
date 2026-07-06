@@ -1,0 +1,11 @@
+{
+  "manager": { "name": "Elena Marsh", "initials": "EM", "title": "Relationship Manager" },
+  "email": "ir@meridiancredit.com",
+  "phone": "+1 (212) 555-0148",
+  "hours": "Mon–Fri · 9–6 ET",
+  "regardingOptions": ["General enquiry", "Wire instructions", "Statements & reporting", "Tax documents", "Capital calls & distributions", "Legal / side letter"],
+  "recentRequests": [
+    { "subject": "Wire instruction update", "ref": "#REQ-3391", "date": "Jun 24", "status": "Resolved" },
+    { "subject": "Q1 statement question", "ref": "#REQ-3288", "date": "Apr 30", "status": "Resolved" }
+  ]
+}

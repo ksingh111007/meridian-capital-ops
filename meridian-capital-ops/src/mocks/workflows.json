@@ -1,0 +1,19 @@
+{
+  "workflowName": "Capital Calls",
+  "stages": [
+    { "order": 1, "name": "Operations", "approverRole": "Ops Analyst", "slaDays": 1, "autoAdvance": false, "required": true },
+    { "order": 2, "name": "Front Office", "approverRole": "Deal Lead", "slaDays": 1, "autoAdvance": false, "required": true },
+    { "order": 3, "name": "CIO", "approverRole": "CIO", "slaDays": 2, "autoAdvance": false, "required": true },
+    { "order": 4, "name": "Legal", "approverRole": "Counsel", "slaDays": 2, "autoAdvance": false, "required": true },
+    { "order": 5, "name": "Ops Final Review", "approverRole": "Ops Manager", "slaDays": 1, "autoAdvance": false, "required": true },
+    { "order": 6, "name": "Accounting", "approverRole": "Fund Accountant", "slaDays": 1, "autoAdvance": false, "required": true },
+    { "order": 7, "name": "Book", "approverRole": "System", "slaDays": null, "autoAdvance": true, "required": true },
+    { "order": 8, "name": "Custodians Notified", "approverRole": "System", "slaDays": null, "autoAdvance": true, "required": false },
+    { "order": 9, "name": "Completed", "approverRole": "", "slaDays": null, "autoAdvance": false, "required": false, "terminal": true }
+  ],
+  "escalationRules": [
+    { "condition": "Call amount > $20M", "effect": "require CIO + Compliance sign-off", "enabled": true },
+    { "condition": "Cross-fund allocation", "effect": "require Legal review", "enabled": true },
+    { "condition": "Wire to a new bank account", "effect": "require dual authorization", "enabled": true }
+  ]
+}

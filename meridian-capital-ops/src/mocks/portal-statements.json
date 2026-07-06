@@ -1,0 +1,13 @@
+{
+  "totalCount": 34,
+  "documents": [
+    { "id": "doc-1", "name": "Q2 2026 Capital Account Statement", "fund": "Fund III", "period": "Q2 2026", "type": "Capital account", "date": "2026-07-15" },
+    { "id": "doc-2", "name": "Q2 2026 Capital Account Statement", "fund": "Fund II", "period": "Q2 2026", "type": "Capital account", "date": "2026-07-15" },
+    { "id": "doc-3", "name": "Distribution Notice #D-117", "fund": "Fund III", "period": "Jun 2026", "type": "Notice", "date": "2026-06-30" },
+    { "id": "doc-4", "name": "Capital Call Notice #C-2041", "fund": "Fund III", "period": "Jul 2026", "type": "Notice", "date": "2026-07-01" },
+    { "id": "doc-5", "name": "2025 Schedule K-1", "fund": "Fund III", "period": "FY 2025", "type": "Tax", "date": "2026-03-20" },
+    { "id": "doc-6", "name": "2025 Schedule K-1", "fund": "Fund II", "period": "FY 2025", "type": "Tax", "date": "2026-03-20" },
+    { "id": "doc-7", "name": "Fund III — Q2 2026 Report", "fund": "Fund III", "period": "Q2 2026", "type": "Report", "date": "2026-07-20" },
+    { "id": "doc-8", "name": "Q1 2026 Capital Account Statement", "fund": "Fund III", "period": "Q1 2026", "type": "Capital account", "date": "2026-04-15" }
+  ]
+}

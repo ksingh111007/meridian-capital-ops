@@ -1,0 +1,11 @@
+{
+  "items": [
+    { "id": "att-1", "kind": "approval", "title": "Call #C-2041 · Project Atlas awaits Legal approval", "detail": "$16.00M · due Jul 08 · you are the stage approver", "href": "/capital-calls/call-2041", "tone": "blue", "mine": true },
+    { "id": "att-2", "kind": "approval", "title": "Call #C-2039 · Project Delta returned to CIO", "detail": "$18.40M · returned Jul 04 · awaiting S. Patel", "href": "/capital-calls/call-2039", "tone": "amber", "mine": false },
+    { "id": "att-3", "kind": "overdue", "title": "2 LP wires overdue on Call #C-2039", "detail": "Granite State $4.30M · Oakmont $2.80M · due Jul 01 (4d late)", "href": "/capital-calls/call-2039", "tone": "red", "mine": false },
+    { "id": "att-4", "kind": "exception", "title": "Wire W-8847 exception — Granite State $4.08M", "detail": "SWIFT reject · MT103 · Distribution #D-119", "href": "/wires", "tone": "red", "mine": false },
+    { "id": "att-5", "kind": "break", "title": "Recon break $0.42M — Distribution #D-119 batch", "detail": "Book $12.00M vs custodian $11.58M · Jul 03", "href": "/reconciliation", "tone": "red", "mine": false },
+    { "id": "att-6", "kind": "warning", "title": "SWIFT Gateway certificate expires Jul 13", "detail": "Rotate credentials to avoid outbound wire disruption", "href": "/admin/integrations", "tone": "amber", "mine": false },
+    { "id": "att-7", "kind": "due-soon", "title": "3 calls due within 7 days — $49.05M", "detail": "#C-2041 Jul 08 · #C-2042 Jul 09 · #C-2036 Jul 11", "href": "/capital-calls", "tone": "neutral", "mine": false }
+  ]
+}

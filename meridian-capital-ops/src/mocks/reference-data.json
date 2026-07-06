@@ -1,0 +1,22 @@
+{
+  "borrowers": [
+    { "name": "Vantage Health", "sector": "Healthcare", "country": "US", "deal": "Project Atlas", "internalRating": "B+" },
+    { "name": "Nordic Logistics", "sector": "Transport & Logistics", "country": "SE", "deal": "Project Beacon", "internalRating": "BB−" },
+    { "name": "Apex Manufacturing", "sector": "Industrials", "country": "US", "deal": "Project Cedar", "internalRating": "B" },
+    { "name": "Helio Software", "sector": "Technology", "country": "US", "deal": "Project Delta", "internalRating": "B−" },
+    { "name": "Coastal Foods", "sector": "Consumer Staples", "country": "US", "deal": "Project Echo", "internalRating": "BB−" },
+    { "name": "Summit Metals", "sector": "Materials", "country": "US", "deal": "Project Foxtrot", "internalRating": "CCC" },
+    { "name": "Harborview REIT", "sector": "Real Estate", "country": "US", "deal": "Project Gale", "internalRating": "B+" }
+  ],
+  "currencies": [
+    { "code": "USD", "rate": 1.0, "note": "base" },
+    { "code": "EUR", "rate": 1.085, "note": "" },
+    { "code": "GBP", "rate": 1.271, "note": "" }
+  ],
+  "currenciesUpdated": "updated 09:40 · SOFR feed",
+  "calendars": [
+    { "name": "US (SIFMA)", "nextHoliday": "Sep 07" },
+    { "name": "UK", "nextHoliday": "Aug 25" },
+    { "name": "TARGET2 (EUR)", "nextHoliday": "Dec 25" }
+  ]
+}

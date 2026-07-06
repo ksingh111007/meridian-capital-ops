@@ -1,0 +1,12 @@
+{
+  "asOf": "09:41:22",
+  "kpis": { "wiresToday": 6, "settledAmount": 9.26, "settledCount": 2, "inFlightAmount": 15.63, "inFlightCount": 3, "exceptions": 1 },
+  "wires": [
+    { "id": "wire-8842", "ref": "W-8842", "direction": "In", "counterparty": "Blue Harbor Endowment", "type": "Capital Call", "linkedRef": "#C-2041", "amount": 5.1, "time": "09:02", "date": "2026-07-05", "rail": "Fedwire", "status": "Settled" },
+    { "id": "wire-8843", "ref": "W-8843", "direction": "Out", "counterparty": "Redwood Pension", "type": "Distribution", "linkedRef": "#D-119", "amount": 2.1, "time": "09:14", "date": "2026-07-05", "rail": "Fedwire", "status": "Sent" },
+    { "id": "wire-8844", "ref": "W-8844", "direction": "Out", "counterparty": "Cascade Family Office", "type": "Distribution", "linkedRef": "#D-119", "amount": 3.5, "time": "09:15", "date": "2026-07-05", "rail": "Fedwire", "status": "Settled" },
+    { "id": "wire-8845", "ref": "W-8845", "direction": "In", "counterparty": "Cascade Family Office", "type": "Capital Call", "linkedRef": "#C-2041", "amount": 2.7, "time": "09:20", "date": "2026-07-05", "rail": "ACH", "status": "Queued" },
+    { "id": "wire-8846", "ref": "W-8846", "direction": "Out", "counterparty": "Silverpoint Bank", "type": "Facility Repay", "linkedRef": "Sub Line B", "amount": 6.75, "time": "09:22", "date": "2026-07-05", "rail": "Fedwire", "status": "Acknowledged" },
+    { "id": "wire-8847", "ref": "W-8847", "direction": "Out", "counterparty": "Granite State Insurance", "type": "Distribution", "linkedRef": "#D-119", "amount": 4.08, "time": "09:31", "date": "2026-07-05", "rail": "SWIFT", "status": "Exception", "exceptionReason": "SWIFT reject · MT103 — signing certificate invalid" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "kpis": { "funds": 3, "investing": 2, "committed": 2450, "calledPct": 78, "calledAmount": 1910, "legalEntities": 11 },
+  "funds": [
+    { "id": "fund-iii", "name": "Meridian Credit III", "shortName": "Fund III", "vintage": 2024, "committed": 1200, "calledPct": 71, "strategy": "Direct Lending", "waterfallType": "European", "baseCurrency": "USD", "status": "Active" },
+    { "id": "fund-ii", "name": "Meridian Credit II", "shortName": "Fund II", "vintage": 2021, "committed": 800, "calledPct": 96, "strategy": "Direct Lending", "waterfallType": "European", "baseCurrency": "USD", "status": "Investing" },
+    { "id": "fund-i", "name": "Meridian Credit I", "shortName": "Fund I", "vintage": 2018, "committed": 450, "calledPct": 100, "strategy": "Direct Lending", "waterfallType": "American", "baseCurrency": "USD", "status": "Harvesting" }
+  ],
+  "entities": [
+    { "fundId": "fund-iii", "name": "Meridian Credit III GP, LLC", "kind": "GP" },
+    { "fundId": "fund-iii", "name": "Meridian Credit III Master, LP", "kind": "Master" },
+    { "fundId": "fund-iii", "name": "MC III Onshore Feeder, LP", "kind": "Feeder" },
+    { "fundId": "fund-iii", "name": "MC III Offshore Feeder", "kind": "Cayman" },
+    { "fundId": "fund-iii", "name": "MC III Blocker Corp", "kind": "Blocker" }
+  ],
+  "shareClasses": [
+    { "fundId": "fund-iii", "name": "Class A", "mgmtFeePct": 1.5, "carryPct": 20, "prefPct": 8 },
+    { "fundId": "fund-iii", "name": "Class B", "mgmtFeePct": 1.25, "carryPct": 15, "prefPct": 8 }
+  ]
+}

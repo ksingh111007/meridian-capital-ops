@@ -1,0 +1,70 @@
+{
+  "distributions": [
+    {
+      "id": "dist-118", "ref": "#D-118", "fundId": "fund-iii", "distributable": 42.0, "lpTotal": 39.2, "gpTotal": 2.8,
+      "paymentDate": "2026-09-30", "status": "Scheduled", "waterfallType": "European", "sourceNote": "Loan repayments + interest",
+      "tiers": [
+        { "tier": "1 · Return of Capital", "basis": "Contributed capital", "rate": "100% LP", "distributed": 28.0, "lpShare": 28.0, "gpShare": null, "poolLeft": 14.0 },
+        { "tier": "2 · Preferred Return", "basis": "Hurdle on capital", "rate": "8.0%", "distributed": 6.0, "lpShare": 6.0, "gpShare": null, "poolLeft": 8.0 },
+        { "tier": "3 · GP Catch-up", "basis": "Until GP = 20% of profit", "rate": "100% GP", "distributed": 1.5, "lpShare": null, "gpShare": 1.5, "poolLeft": 6.5 },
+        { "tier": "4 · Carried Interest", "basis": "Residual profit split", "rate": "80 / 20", "distributed": 6.5, "lpShare": 5.2, "gpShare": 1.3, "poolLeft": 0.0 }
+      ],
+      "payouts": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 40.0, "amount": 7.13, "pctOfLpTotal": 18.2, "status": "Scheduled" },
+        { "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "commitment": 25.0, "amount": 4.45, "pctOfLpTotal": 11.4, "status": "Scheduled" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 10.69, "pctOfLpTotal": 27.3, "status": "Scheduled" },
+        { "investorId": "inv-summit", "investor": "Summit Investments", "commitment": 50.0, "amount": 8.91, "pctOfLpTotal": 22.7, "status": "Scheduled" },
+        { "investorId": "inv-ironwood", "investor": "Ironwood Capital", "commitment": 45.0, "amount": 8.02, "pctOfLpTotal": 20.4, "status": "Scheduled" }
+      ]
+    },
+    {
+      "id": "dist-119", "ref": "#D-119", "fundId": "fund-ii", "distributable": 12.75, "lpTotal": 12.0, "gpTotal": 0.75,
+      "paymentDate": "2026-07-03", "status": "Paying", "waterfallType": "European", "sourceNote": "Cedar repayment + interest",
+      "tiers": [
+        { "tier": "1 · Return of Capital", "basis": "Contributed capital", "rate": "100% LP", "distributed": 9.0, "lpShare": 9.0, "gpShare": null, "poolLeft": 3.75 },
+        { "tier": "2 · Preferred Return", "basis": "Hurdle on capital", "rate": "8.0%", "distributed": 2.0, "lpShare": 2.0, "gpShare": null, "poolLeft": 1.75 },
+        { "tier": "3 · GP Catch-up", "basis": "Until GP = 20% of profit", "rate": "100% GP", "distributed": 0.5, "lpShare": null, "gpShare": 0.5, "poolLeft": 1.25 },
+        { "tier": "4 · Carried Interest", "basis": "Residual profit split", "rate": "80 / 20", "distributed": 1.25, "lpShare": 1.0, "gpShare": 0.25, "poolLeft": 0.0 }
+      ],
+      "payouts": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 18.0, "amount": 2.1, "pctOfLpTotal": 17.5, "status": "Sent", "wireRef": "W-8843" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 30.0, "amount": 3.5, "pctOfLpTotal": 29.2, "status": "Paid", "wireRef": "W-8844" },
+        { "investorId": "inv-granite", "investor": "Granite State Insurance", "commitment": 35.0, "amount": 4.08, "pctOfLpTotal": 34.0, "status": "Exception", "wireRef": "W-8847" },
+        { "investorId": "inv-oakmont", "investor": "Oakmont Trust", "commitment": 20.0, "amount": 2.32, "pctOfLpTotal": 19.3, "status": "Blocked", "blockedReason": "No wire instructions on file" }
+      ]
+    },
+    {
+      "id": "dist-117", "ref": "#D-117", "fundId": "fund-iii", "distributable": 19.9, "lpTotal": 18.7, "gpTotal": 1.2,
+      "paymentDate": "2026-06-30", "status": "Paid", "waterfallType": "European", "sourceNote": "Interest income",
+      "tiers": [
+        { "tier": "1 · Return of Capital", "basis": "Contributed capital", "rate": "100% LP", "distributed": 14.0, "lpShare": 14.0, "gpShare": null, "poolLeft": 5.9 },
+        { "tier": "2 · Preferred Return", "basis": "Hurdle on capital", "rate": "8.0%", "distributed": 2.9, "lpShare": 2.9, "gpShare": null, "poolLeft": 3.0 },
+        { "tier": "3 · GP Catch-up", "basis": "Until GP = 20% of profit", "rate": "100% GP", "distributed": 0.75, "lpShare": null, "gpShare": 0.75, "poolLeft": 2.25 },
+        { "tier": "4 · Carried Interest", "basis": "Residual profit split", "rate": "80 / 20", "distributed": 2.25, "lpShare": 1.8, "gpShare": 0.45, "poolLeft": 0.0 }
+      ],
+      "payouts": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 40.0, "amount": 3.4, "pctOfLpTotal": 18.2, "status": "Paid" },
+        { "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "commitment": 25.0, "amount": 2.13, "pctOfLpTotal": 11.4, "status": "Paid" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 5.1, "pctOfLpTotal": 27.3, "status": "Paid" },
+        { "investorId": "inv-summit", "investor": "Summit Investments", "commitment": 50.0, "amount": 4.25, "pctOfLpTotal": 22.7, "status": "Paid" },
+        { "investorId": "inv-ironwood", "investor": "Ironwood Capital", "commitment": 45.0, "amount": 3.82, "pctOfLpTotal": 20.4, "status": "Paid" }
+      ]
+    },
+    {
+      "id": "dist-116", "ref": "#D-116", "fundId": "fund-ii", "distributable": 10.6, "lpTotal": 10.0, "gpTotal": 0.6,
+      "paymentDate": "2026-03-31", "status": "Paid", "waterfallType": "European", "sourceNote": "Interest income",
+      "tiers": [
+        { "tier": "1 · Return of Capital", "basis": "Contributed capital", "rate": "100% LP", "distributed": 7.5, "lpShare": 7.5, "gpShare": null, "poolLeft": 3.1 },
+        { "tier": "2 · Preferred Return", "basis": "Hurdle on capital", "rate": "8.0%", "distributed": 1.7, "lpShare": 1.7, "gpShare": null, "poolLeft": 1.4 },
+        { "tier": "3 · GP Catch-up", "basis": "Until GP = 20% of profit", "rate": "100% GP", "distributed": 0.4, "lpShare": null, "gpShare": 0.4, "poolLeft": 1.0 },
+        { "tier": "4 · Carried Interest", "basis": "Residual profit split", "rate": "80 / 20", "distributed": 1.0, "lpShare": 0.8, "gpShare": 0.2, "poolLeft": 0.0 }
+      ],
+      "payouts": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 18.0, "amount": 1.75, "pctOfLpTotal": 17.5, "status": "Paid" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 30.0, "amount": 2.91, "pctOfLpTotal": 29.1, "status": "Paid" },
+        { "investorId": "inv-granite", "investor": "Granite State Insurance", "commitment": 35.0, "amount": 3.4, "pctOfLpTotal": 34.0, "status": "Paid" },
+        { "investorId": "inv-oakmont", "investor": "Oakmont Trust", "commitment": 20.0, "amount": 1.94, "pctOfLpTotal": 19.4, "status": "Paid" }
+      ]
+    }
+  ]
+}

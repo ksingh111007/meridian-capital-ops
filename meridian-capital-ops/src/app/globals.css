@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — mapped from the wireframe's semantic color roles (see docs/DESIGN.md).
+ * The wireframe's sketch aesthetic (dashed borders, offset shadows, handwritten font)
+ * is intentionally discarded per the design handoff.
+ */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jbmono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ink */
+  --color-ink: #1c1917;
+  --color-ink-secondary: #57534e;
+  --color-ink-muted: #6f6a63;
+  --color-ink-faint: #a8a29e;
+
+  /* surfaces */
+  --color-canvas: #f3f2ef;
+  --color-card: #ffffff;
+  --color-fill: #faf9f7;
+  --color-fill-strong: #f2f0ec;
+  --color-line: #e5e2dc;
+  --color-line-strong: #d6d2ca;
+
+  /* semantic accents */
+  --color-primary: #2a6fd6;
+  --color-primary-strong: #1f5cb8;
+  --color-primary-soft: #e8f0fc;
+  --color-primary-line: #b8cff0;
+  --color-positive: #1f7a45;
+  --color-positive-soft: #e7f4ec;
+  --color-positive-line: #a5d4b6;
+  --color-caution: #92610e;
+  --color-caution-strong: #b45309;
+  --color-caution-soft: #fbf1dd;
+  --color-caution-line: #e4cd97;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fbeaea;
+  --color-danger-line: #e5a5a5;
+  --color-gp: #1f2937;
+
+  --shadow-card: 0 1px 2px rgb(28 25 23 / 0.05), 0 1px 3px rgb(28 25 23 / 0.06);
+  --shadow-pop: 0 12px 32px rgb(28 25 23 / 0.18);
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* money / percent / ref columns always use tabular figures */
+.num {
+  font-variant-numeric: tabular-nums;
+}
