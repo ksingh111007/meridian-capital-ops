@@ -1,0 +1,28 @@
+{
+  "kpis": { "portalUsers": 62, "active": 58, "pendingInvites": 3, "investorsWithAccess": "44 / 48", "notEnrolled": 4 },
+  "contacts": [
+    { "id": "pc-1", "name": "Karen Doyle", "initials": "KD", "investorId": "inv-redwood", "investor": "Redwood Pension", "role": "Primary", "fundsVisible": "II, III", "statements": "full", "status": "Active" },
+    { "id": "pc-2", "name": "Mark Feld", "initials": "MF", "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "role": "Primary", "fundsVisible": "III", "statements": "full", "status": "Active" },
+    { "id": "pc-3", "name": "Lucia Romano", "initials": "LR", "investorId": "inv-cascade", "investor": "Cascade Family Office", "role": "Viewer", "fundsVisible": "II, III", "statements": "full", "status": "Active" },
+    { "id": "pc-4", "name": "t.wells@granite…", "initials": "TW", "investorId": "inv-granite", "investor": "Granite State Insurance", "role": "Tax-only", "fundsVisible": "II", "statements": "tax", "status": "Invited" },
+    { "id": "pc-5", "name": "David Chen", "initials": "DC", "investorId": "inv-summit", "investor": "Summit Investments", "role": "Primary", "fundsVisible": "III", "statements": "full", "status": "Active" },
+    { "id": "pc-6", "name": "R. Okafor", "initials": "RO", "investorId": "inv-oakmont", "investor": "Oakmont Trust", "role": "Viewer", "fundsVisible": "II", "statements": "none", "status": "Disabled" }
+  ],
+  "capabilities": [
+    { "label": "View capital account balances", "enabled": true },
+    { "label": "Download capital account statements", "enabled": true },
+    { "label": "View & download tax documents (K-1)", "enabled": true },
+    { "label": "View capital activity (calls & distributions)", "enabled": true },
+    { "label": "View unfunded commitment", "enabled": true },
+    { "label": "Submit wire confirmations", "enabled": false },
+    { "label": "Message the IR team", "enabled": true }
+  ],
+  "documentTypes": [
+    { "label": "Capital Account Statements", "exposed": true },
+    { "label": "Capital Call Notices", "exposed": true },
+    { "label": "Distribution Notices", "exposed": true },
+    { "label": "Schedule K-1 / Tax", "exposed": true },
+    { "label": "Audited fund financials", "exposed": true },
+    { "label": "Side letters", "exposed": false }
+  ]
+}

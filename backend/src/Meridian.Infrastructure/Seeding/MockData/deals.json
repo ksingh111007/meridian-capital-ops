@@ -1,0 +1,11 @@
+{
+  "deals": [
+    { "id": "deal-atlas", "name": "Project Atlas", "borrower": "Vantage Health", "sector": "Healthcare", "country": "US", "fundId": "fund-iii", "tranche": "Term A", "invested": 85, "outstanding": 80, "spread": "S+2.50%", "netIrrPct": 13.8, "irrTrend": "up", "moic": 1.12, "status": "Performing" },
+    { "id": "deal-beacon", "name": "Project Beacon", "borrower": "Nordic Logistics", "sector": "Transport & Logistics", "country": "SE", "fundId": "fund-iii", "tranche": "Unitranche", "invested": 110, "outstanding": 104, "spread": "S+2.50%", "netIrrPct": 15.1, "irrTrend": "up", "moic": 1.21, "status": "Performing" },
+    { "id": "deal-cedar", "name": "Project Cedar", "borrower": "Apex Manufacturing", "sector": "Industrials", "country": "US", "fundId": "fund-ii", "tranche": "Term B", "invested": 60, "outstanding": 22, "spread": "S+2.75%", "netIrrPct": 12.4, "irrTrend": "flat", "moic": 1.34, "status": "Performing" },
+    { "id": "deal-delta", "name": "Project Delta", "borrower": "Helio Software", "sector": "Technology", "country": "US", "fundId": "fund-ii", "tranche": "Term A", "invested": 48, "outstanding": 40, "spread": "S+3.25%", "netIrrPct": 9.6, "irrTrend": "down", "moic": 1.08, "status": "Watch" },
+    { "id": "deal-echo", "name": "Project Echo", "borrower": "Coastal Foods", "sector": "Consumer Staples", "country": "US", "fundId": "fund-iii", "tranche": "Term A", "invested": 95, "outstanding": 88, "spread": "S+2.50%", "netIrrPct": 16.2, "irrTrend": "up", "moic": 1.19, "status": "Performing" },
+    { "id": "deal-foxtrot", "name": "Project Foxtrot", "borrower": "Summit Metals", "sector": "Materials", "country": "US", "fundId": "fund-ii", "tranche": "Term B", "invested": 52, "outstanding": 18, "spread": "S+3.00%", "netIrrPct": 7.1, "irrTrend": "down", "moic": 0.94, "status": "Non-accrual" },
+    { "id": "deal-gale", "name": "Project Gale", "borrower": "Harborview REIT", "sector": "Real Estate", "country": "US", "fundId": "fund-iii", "tranche": "Mezzanine", "invested": 70, "outstanding": 66, "spread": "S+4.00%", "netIrrPct": 18.4, "irrTrend": "up", "moic": 1.27, "status": "Performing" }
+  ]
+}

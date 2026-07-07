@@ -1,10 +1,11 @@
 /**
  * Data-access layer. Every function corresponds to one API endpoint
- * (see docs/API.md) and is backed by one JSON mock in src/mocks/.
+ * (see docs/API.md). By default (DATA_SOURCE=api) each function fetches the
+ * real backend via src/lib/api.ts; with DATA_SOURCE=mock it returns the JSON
+ * mock in src/mocks/ exactly as before (kept in the repo for testing).
  *
- * BACKEND HANDOFF: replace the JSON imports with real fetches — the function
- * signatures and return types are the contract. Screens only ever import from
- * this module (server components call it directly; the /api routes wrap it).
+ * Screens only ever import from this module (server components call it
+ * directly; the /api proxy routes wrap the same backend for client mutations).
  */
 import type {
   AttentionItem, AuditEvent, CapitalCall, CashPosition, CurrentUser, Deal, DealDetail,
@@ -13,6 +14,7 @@ import type {
   PortalIrInfo, PortalTaxDocument, PortfolioSummary, ReconItem, Role, ShareClass,
   StaffUser, Wire, WorkflowStage,
 } from "./types";
+import { apiFind, apiGet, USE_API } from "./api";
 
 import portfolioSummary from "@/mocks/portfolio-summary.json";
 import dealsJson from "@/mocks/deals.json";
@@ -43,134 +45,151 @@ import portalContactJson from "@/mocks/portal-contact.json";
 
 // ---------- session ----------
 
-export function getCurrentUser(): CurrentUser {
-  return meJson as CurrentUser;
+export async function getCurrentUser(): Promise<CurrentUser> {
+  return USE_API ? apiGet<CurrentUser>("me") : (meJson as CurrentUser);
 }
 
 // ---------- portfolio ----------
 
-export function getPortfolioSummary(): PortfolioSummary {
-  return portfolioSummary as PortfolioSummary;
+export async function getPortfolioSummary(): Promise<PortfolioSummary> {
+  return USE_API ? apiGet<PortfolioSummary>("portfolio/summary") : (portfolioSummary as PortfolioSummary);
 }
 
-export function getDeals(): Deal[] {
-  return dealsJson.deals as Deal[];
+export async function getDeals(): Promise<Deal[]> {
+  return USE_API ? apiGet<Deal[]>("deals") : (dealsJson.deals as Deal[]);
 }
 
-export function getDeal(id: string): DealDetail | undefined {
-  const base = getDeals().find((d) => d.id === id);
+export async function getDeal(id: string): Promise<DealDetail | undefined> {
+  if (USE_API) return apiFind<DealDetail>(`deals/${id}`); // backend returns the full merged DealDetail
+  const base = (dealsJson.deals as Deal[]).find((d) => d.id === id);
   const detail = (dealDetailsJson as Record<string, Omit<DealDetail, keyof Deal>>)[id];
   return base && detail ? { ...base, ...detail } : undefined;
 }
 
 // ---------- capital calls ----------
 
-export function getCapitalCalls(): CapitalCall[] {
-  return capitalCallsJson.calls as CapitalCall[];
+export async function getCapitalCalls(): Promise<CapitalCall[]> {
+  return USE_API ? apiGet<CapitalCall[]>("capital-calls") : (capitalCallsJson.calls as CapitalCall[]);
 }
 
-export function getCapitalCall(id: string): CapitalCall | undefined {
-  return getCapitalCalls().find((c) => c.id === id);
+export async function getCapitalCall(id: string): Promise<CapitalCall | undefined> {
+  if (USE_API) return apiFind<CapitalCall>(`capital-calls/${id}`);
+  return (capitalCallsJson.calls as CapitalCall[]).find((c) => c.id === id);
 }
 
-export function getWorkflow(): { workflowName: string; stages: WorkflowStage[]; escalationRules: EscalationRule[] } {
-  return workflowsJson as { workflowName: string; stages: WorkflowStage[]; escalationRules: EscalationRule[] };
+export async function getWorkflow(): Promise<{ workflowName: string; stages: WorkflowStage[]; escalationRules: EscalationRule[] }> {
+  type WorkflowPayload = { workflowName: string; stages: WorkflowStage[]; escalationRules: EscalationRule[] };
+  return USE_API ? apiGet<WorkflowPayload>("workflows/capital-calls") : (workflowsJson as WorkflowPayload);
 }
 
 // ---------- distributions & fund ops ----------
 
-export function getDistributions(): Distribution[] {
-  return distributionsJson.distributions as Distribution[];
+export async function getDistributions(): Promise<Distribution[]> {
+  return USE_API ? apiGet<Distribution[]>("distributions") : (distributionsJson.distributions as Distribution[]);
 }
 
-export function getDistribution(id: string): Distribution | undefined {
-  return getDistributions().find((d) => d.id === id);
+export async function getDistribution(id: string): Promise<Distribution | undefined> {
+  if (USE_API) return apiFind<Distribution>(`distributions/${id}`);
+  return (distributionsJson.distributions as Distribution[]).find((d) => d.id === id);
 }
 
-export function getDrawdowns(): { kpis: typeof drawdownsJson.kpis; drawdowns: Drawdown[] } {
-  return drawdownsJson as { kpis: typeof drawdownsJson.kpis; drawdowns: Drawdown[] };
+export async function getDrawdowns(): Promise<{ kpis: typeof drawdownsJson.kpis; drawdowns: Drawdown[] }> {
+  type Payload = { kpis: typeof drawdownsJson.kpis; drawdowns: Drawdown[] };
+  return USE_API ? apiGet<Payload>("drawdowns") : (drawdownsJson as Payload);
 }
 
-export function getWires(): { asOf: string; kpis: typeof wiresJson.kpis; wires: Wire[] } {
-  return wiresJson as { asOf: string; kpis: typeof wiresJson.kpis; wires: Wire[] };
+export async function getWires(): Promise<{ asOf: string; kpis: typeof wiresJson.kpis; wires: Wire[] }> {
+  type Payload = { asOf: string; kpis: typeof wiresJson.kpis; wires: Wire[] };
+  return USE_API ? apiGet<Payload>("wires") : (wiresJson as Payload);
 }
 
-export function getCashPosition(): CashPosition {
-  return cashPositionJson as CashPosition;
+export async function getCashPosition(): Promise<CashPosition> {
+  return USE_API ? apiGet<CashPosition>("cash/position") : (cashPositionJson as CashPosition);
 }
 
-export function getReconciliation(): { asOf: string; source: string; kpis: typeof reconciliationJson.kpis; items: ReconItem[] } {
-  return reconciliationJson as { asOf: string; source: string; kpis: typeof reconciliationJson.kpis; items: ReconItem[] };
+export async function getReconciliation(): Promise<{ asOf: string; source: string; kpis: typeof reconciliationJson.kpis; items: ReconItem[] }> {
+  type Payload = { asOf: string; source: string; kpis: typeof reconciliationJson.kpis; items: ReconItem[] };
+  return USE_API ? apiGet<Payload>("reconciliation") : (reconciliationJson as Payload);
 }
 
 // ---------- funds / investors / reference ----------
 
-export function getFunds(): { kpis: typeof fundsJson.kpis; funds: Fund[]; entities: LegalEntity[]; shareClasses: ShareClass[] } {
-  return fundsJson as { kpis: typeof fundsJson.kpis; funds: Fund[]; entities: LegalEntity[]; shareClasses: ShareClass[] };
+export async function getFunds(): Promise<{ kpis: typeof fundsJson.kpis; funds: Fund[]; entities: LegalEntity[]; shareClasses: ShareClass[] }> {
+  type Payload = { kpis: typeof fundsJson.kpis; funds: Fund[]; entities: LegalEntity[]; shareClasses: ShareClass[] };
+  return USE_API ? apiGet<Payload>("admin/funds") : (fundsJson as Payload);
 }
 
-export function getFund(fundId: string): Fund | undefined {
-  return getFunds().funds.find((f) => f.id === fundId);
+export async function getFund(fundId: string): Promise<Fund | undefined> {
+  return (await getFunds()).funds.find((f) => f.id === fundId);
 }
 
-export function getInvestors(): { kpis: typeof investorsJson.kpis; investors: Investor[] } {
-  return investorsJson as { kpis: typeof investorsJson.kpis; investors: Investor[] };
+export async function getInvestors(): Promise<{ kpis: typeof investorsJson.kpis; investors: Investor[] }> {
+  type Payload = { kpis: typeof investorsJson.kpis; investors: Investor[] };
+  return USE_API ? apiGet<Payload>("admin/investors") : (investorsJson as Payload);
 }
 
-export function getReferenceData() {
-  return referenceDataJson;
+export async function getReferenceData(): Promise<typeof referenceDataJson> {
+  return USE_API ? apiGet<typeof referenceDataJson>("admin/reference") : referenceDataJson;
 }
 
 // ---------- admin ----------
 
-export function getUsersAndRoles(): { kpis: typeof usersJson.kpis; users: StaffUser[]; roles: Role[] } {
-  return usersJson as { kpis: typeof usersJson.kpis; users: StaffUser[]; roles: Role[] };
+export async function getUsersAndRoles(): Promise<{ kpis: typeof usersJson.kpis; users: StaffUser[]; roles: Role[] }> {
+  type Payload = { kpis: typeof usersJson.kpis; users: StaffUser[]; roles: Role[] };
+  return USE_API ? apiGet<Payload>("admin/users") : (usersJson as Payload);
 }
 
-export function getIntegrations(): { kpis: typeof integrationsJson.kpis; integrations: Integration[] } {
-  return integrationsJson as { kpis: typeof integrationsJson.kpis; integrations: Integration[] };
+export async function getIntegrations(): Promise<{ kpis: typeof integrationsJson.kpis; integrations: Integration[] }> {
+  type Payload = { kpis: typeof integrationsJson.kpis; integrations: Integration[] };
+  return USE_API ? apiGet<Payload>("admin/integrations") : (integrationsJson as Payload);
 }
 
-export function getNotificationRules(): { rules: NotificationRule[]; channels: typeof notificationRulesJson.channels } {
-  return notificationRulesJson as { rules: NotificationRule[]; channels: typeof notificationRulesJson.channels };
+export async function getNotificationRules(): Promise<{ rules: NotificationRule[]; channels: typeof notificationRulesJson.channels }> {
+  type Payload = { rules: NotificationRule[]; channels: typeof notificationRulesJson.channels };
+  return USE_API ? apiGet<Payload>("admin/notification-rules") : (notificationRulesJson as Payload);
 }
 
-export function getAuditLog(): { kpis: typeof auditLogJson.kpis; events: AuditEvent[] } {
-  return auditLogJson as { kpis: typeof auditLogJson.kpis; events: AuditEvent[] };
+export async function getAuditLog(): Promise<{ kpis: typeof auditLogJson.kpis; events: AuditEvent[] }> {
+  type Payload = { kpis: typeof auditLogJson.kpis; events: AuditEvent[] };
+  return USE_API ? apiGet<Payload>("admin/audit") : (auditLogJson as Payload);
 }
 
-export function getInvestorAccess(): InvestorAccessConfig {
-  return investorAccessJson as InvestorAccessConfig;
+export async function getInvestorAccess(): Promise<InvestorAccessConfig> {
+  return USE_API ? apiGet<InvestorAccessConfig>("admin/investor-access") : (investorAccessJson as InvestorAccessConfig);
 }
 
 // ---------- needs attention (ops inbox) ----------
 
-export function getNeedsAttention(): AttentionItem[] {
-  return needsAttentionJson.items as AttentionItem[];
+export async function getNeedsAttention(): Promise<AttentionItem[]> {
+  return USE_API ? apiGet<AttentionItem[]>("needs-attention") : (needsAttentionJson.items as AttentionItem[]);
 }
 
 // ---------- investor portal (scoped to the authenticated LP) ----------
 
-export function getPortalAccount(): PortalAccount {
-  return portalAccountJson as PortalAccount;
+export async function getPortalAccount(): Promise<PortalAccount> {
+  return USE_API ? apiGet<PortalAccount>("portal/account") : (portalAccountJson as PortalAccount);
 }
 
-export function getPortalInvestments() {
-  return portalInvestmentsJson;
+export async function getPortalInvestments(): Promise<typeof portalInvestmentsJson> {
+  return USE_API ? apiGet<typeof portalInvestmentsJson>("portal/investments") : portalInvestmentsJson;
 }
 
-export function getPortalActivity(): { stats: typeof portalActivityJson.stats; rows: PortalActivityRow[] } {
-  return portalActivityJson as { stats: typeof portalActivityJson.stats; rows: PortalActivityRow[] };
+export async function getPortalActivity(): Promise<{ stats: typeof portalActivityJson.stats; rows: PortalActivityRow[] }> {
+  type Payload = { stats: typeof portalActivityJson.stats; rows: PortalActivityRow[] };
+  return USE_API ? apiGet<Payload>("portal/activity") : (portalActivityJson as Payload);
 }
 
-export function getPortalStatements(): { totalCount: number; documents: PortalDocument[] } {
-  return portalStatementsJson as { totalCount: number; documents: PortalDocument[] };
+export async function getPortalStatements(): Promise<{ totalCount: number; documents: PortalDocument[] }> {
+  type Payload = { totalCount: number; documents: PortalDocument[] };
+  return USE_API ? apiGet<Payload>("portal/statements") : (portalStatementsJson as Payload);
 }
 
-export function getPortalTax(): { banner: typeof portalTaxJson.banner; documents: PortalTaxDocument[] } {
-  return portalTaxJson as { banner: typeof portalTaxJson.banner; documents: PortalTaxDocument[] };
+export async function getPortalTax(): Promise<{ banner: typeof portalTaxJson.banner; documents: PortalTaxDocument[] }> {
+  type Payload = { banner: typeof portalTaxJson.banner; documents: PortalTaxDocument[] };
+  return USE_API ? apiGet<Payload>("portal/tax") : (portalTaxJson as Payload);
 }
 
-export function getPortalIrInfo(): PortalIrInfo & { regardingOptions: string[] } {
-  return portalContactJson as PortalIrInfo & { regardingOptions: string[] };
+export async function getPortalIrInfo(): Promise<PortalIrInfo & { regardingOptions: string[] }> {
+  type Payload = PortalIrInfo & { regardingOptions: string[] };
+  return USE_API ? apiGet<Payload>("portal/contact") : (portalContactJson as Payload);
 }

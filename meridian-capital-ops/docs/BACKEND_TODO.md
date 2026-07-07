@@ -1,6 +1,18 @@
 # Backend handoff — what's real, what's mocked, what to build
 
-## Current state
+> **Update 2026-07-07**: the backend now implements the full API.md contract
+> against Azure SQL (`../database` dacpac) / in-memory SQLite, and the frontend
+> fetches it by default — see `STATUS.md` § "2026-07-07 session". Done from the
+> build order below: **2** (read models + data.ts swap), the wire-retry and
+> recon-assign halves of **4**, the reads of **6** (portal scoping incl.
+> Tax-only/Disabled) and **7** (audit log, integrations health; needs-attention
+> now computes wire exceptions, recon breaks, and integration warnings from
+> live tables). Still open: **1** (real SSO — the `X-User-Id` header scheme is
+> a dev stand-in for both staff and portal contacts), **3** partially (create/
+> approve/reject/overdue work; notices are stubs), **5** (waterfall engine),
+> admin CRUD mutations, document downloads, IR messaging threads.
+
+## Current state (as of the initial frontend-only build)
 
 Everything renders and the key flows are interactive, but **nothing persists**:
 

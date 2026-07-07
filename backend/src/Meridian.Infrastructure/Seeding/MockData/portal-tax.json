@@ -1,0 +1,11 @@
+{
+  "banner": { "headline": "2025 K-1s are available.", "detail": "Estimated availability for 2026: March 2027. You’ll be notified by email." },
+  "documents": [
+    { "id": "tax-1", "name": "2025 Schedule K-1", "fund": "Fund III", "taxYear": 2025, "type": "Federal K-1", "status": "Available" },
+    { "id": "tax-2", "name": "2025 Schedule K-1", "fund": "Fund II", "taxYear": 2025, "type": "Federal K-1", "status": "Available" },
+    { "id": "tax-3", "name": "2025 State K-1 (CA)", "fund": "Fund III", "taxYear": 2025, "type": "State K-1", "status": "Available" },
+    { "id": "tax-4", "name": "2024 Schedule K-1", "fund": "Fund III", "taxYear": 2024, "type": "Federal K-1", "status": "Available" },
+    { "id": "tax-5", "name": "2024 Schedule K-1", "fund": "Fund II", "taxYear": 2024, "type": "Federal K-1", "status": "Available" },
+    { "id": "tax-6", "name": "2026 Schedule K-1", "fund": "Fund III", "taxYear": 2026, "type": "Federal K-1", "status": "Pending", "expectedDate": "Mar 2027" }
+  ]
+}

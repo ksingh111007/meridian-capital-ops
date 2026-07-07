@@ -5,6 +5,6 @@ import { PortalInvestmentsScreen } from "@/screens/portal/PortalInvestmentsScree
 export const metadata: Metadata = { title: "My Investments · Investor Portal" };
 
 /** Screen 6e — positions by fund + capital-account rollforward. */
-export default function PortalInvestmentsPage() {
-  return <PortalInvestmentsScreen investments={getPortalInvestments()} />;
+export default async function PortalInvestmentsPage() {
+  return <PortalInvestmentsScreen investments={await getPortalInvestments()} />;
 }

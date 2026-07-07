@@ -5,6 +5,6 @@ import { DistributionsScreen } from "@/screens/DistributionsScreen";
 export const metadata: Metadata = { title: "Distributions" };
 
 /** Screen 4a — allocation summary over the waterfall calculation ledger. */
-export default function DistributionsPage() {
-  return <DistributionsScreen distributions={getDistributions()} />;
+export default async function DistributionsPage() {
+  return <DistributionsScreen distributions={await getDistributions()} />;
 }

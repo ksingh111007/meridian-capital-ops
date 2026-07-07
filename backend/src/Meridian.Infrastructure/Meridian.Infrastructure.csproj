@@ -5,8 +5,15 @@
   <ItemGroup>
     <PackageReference Include="Bogus" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Quartz.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Copies of the frontend mock story (src/mocks) used to seed the SQLite dev
+         store; the Azure SQL seed is generated from the same files by
+         database/tools/generate-seed.mjs. -->
+    <EmbeddedResource Include="Seeding\MockData\*.json" />
   </ItemGroup>
 </Project>

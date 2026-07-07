@@ -3,10 +3,12 @@ import { TopBar } from "@/components/shell/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getCurrentUser, getNeedsAttention } from "@/lib/data";
 
+// Data comes from the backend per request (no-store) — never prerender at build.
+export const dynamic = "force-dynamic";
+
 /** Internal (staff-facing) app shell: collapsible tree nav + top bar. */
-export default function InternalLayout({ children }: { children: React.ReactNode }) {
-  const user = getCurrentUser();
-  const attention = getNeedsAttention();
+export default async function InternalLayout({ children }: { children: React.ReactNode }) {
+  const [user, attention] = await Promise.all([getCurrentUser(), getNeedsAttention()]);
   return (
     <ToastProvider>
       <div className="flex h-dvh overflow-hidden">

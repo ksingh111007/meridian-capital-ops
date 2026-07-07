@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  sqlpackage publish profile for Azure SQL Database.
+
+    sqlpackage /Action:Publish \
+      /SourceFile:bin/Release/Meridian.Database.dacpac \
+      /Profile:profiles/Azure.publish.xml \
+      /TargetConnectionString:"Server=tcp:<server>.database.windows.net,1433;Database=<db>;Authentication=Active Directory Default;Encrypt=True;"
+
+  Conservative defaults for a financial-services database: never drop data or
+  objects that only exist in the target, and never auto-deploy destructive
+  changes — review those as explicit migrations instead.
+-->
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TargetDatabaseName>meridian</TargetDatabaseName>
+    <ScriptDatabaseOptions>True</ScriptDatabaseOptions>
+    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <DropObjectsNotInSource>False</DropObjectsNotInSource>
+    <DropPermissionsNotInSource>False</DropPermissionsNotInSource>
+    <DropRoleMembersNotInSource>False</DropRoleMembersNotInSource>
+    <IgnorePermissions>True</IgnorePermissions>
+    <IgnoreUserSettingsObjects>True</IgnoreUserSettingsObjects>
+    <VerifyDeployment>True</VerifyDeployment>
+    <IncludeTransactionalScripts>True</IncludeTransactionalScripts>
+  </PropertyGroup>
+</Project>

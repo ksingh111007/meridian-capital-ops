@@ -39,16 +39,21 @@ src/screens/XyzScreen.tsx               "use client" — filters, tabs, sorting,
 
 ## Swapping in the real backend
 
-1. Keep `src/lib/types.ts` as the contract (adjust deliberately, not incidentally).
-2. Reimplement each function in `src/lib/data.ts` as an authenticated fetch to
-   the real service; make them `async` and `await` them in the server pages.
-   Screens don't change.
+Status 2026-07-07: steps 1–2 are **done** (`src/lib/data.ts` is async fetches to
+the ../backend API; `DATA_SOURCE=mock` keeps the JSON fallback), and
+`src/app/api/[...endpoint]` is now a proxy so screen mutations persist. Still
+open, deliberately:
+
 3. Replace the optimistic mutation handlers in screens with real POSTs +
-   revalidation (`router.refresh()` or tagged cache invalidation).
-4. Delete `src/mocks/` and `src/app/api/[...endpoint]` once nothing references them.
+   revalidation (`router.refresh()` or tagged cache invalidation) — today the
+   POSTs persist server-side but screens still update local state.
+4. Delete `src/mocks/` and the proxy's mock mode once nothing references them —
+   **not yet**: the mocks still drive mock mode and generate the database seed
+   (`../database/tools/generate-seed.mjs`).
 5. Add route guards: internal layout resolves the session user + capability
    matrix; portal layout resolves the LP session. Render the `NoPermission`
-   state (`src/components/ui/states.tsx`) on failure.
+   state (`src/components/ui/states.tsx`) on failure. (RBAC is already enforced
+   server-side; the default `u-admin` dev principal sees every screen.)
 
 ## State management
 

@@ -9,8 +9,11 @@ import { getPortalAccount } from "@/lib/data";
  * An LP only ever sees their own capital account; in production this lives
  * behind its own auth boundary (see docs/ARCHITECTURE.md).
  */
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const account = getPortalAccount();
+// Data comes from the backend per request (no-store) — never prerender at build.
+export const dynamic = "force-dynamic";
+
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const account = await getPortalAccount();
   return (
     <ToastProvider>
       <div className="flex h-dvh flex-col overflow-hidden">

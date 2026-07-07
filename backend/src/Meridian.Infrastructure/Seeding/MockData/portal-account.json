@@ -1,0 +1,12 @@
+{
+  "investorId": "inv-redwood",
+  "investor": "Redwood Pension",
+  "contactName": "Karen Doyle",
+  "contactInitials": "KD",
+  "asOf": "2026-06-30",
+  "stats": { "commitment": 58.0, "paidIn": 41.2, "distributions": 18.6, "nav": 34.8, "netIrrPct": 13.2 },
+  "funds": [
+    { "fundId": "fund-iii", "name": "Meridian Credit III", "vintage": 2024, "commitment": 40.0, "nav": 24.1, "netIrrPct": 14.1, "dpi": 0.38, "calledPct": 71, "calledAmount": 28.4 },
+    { "fundId": "fund-ii", "name": "Meridian Credit II", "vintage": 2021, "commitment": 18.0, "nav": 10.7, "netIrrPct": 11.8, "dpi": 0.62, "calledPct": 96, "calledAmount": 17.3 }
+  ]
+}

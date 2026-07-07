@@ -5,12 +5,9 @@ import { PortalOverviewScreen } from "@/screens/portal/PortalOverviewScreen";
 export const metadata: Metadata = { title: "Overview · Investor Portal" };
 
 /** Screen 6b — external LP view: positions + statement downloads. */
-export default function PortalOverviewPage() {
-  return (
-    <PortalOverviewScreen
-      account={getPortalAccount()}
-      activity={getPortalActivity().rows}
-      documents={getPortalStatements().documents}
-    />
-  );
+export default async function PortalOverviewPage() {
+  const [account, activity, statements] = await Promise.all([
+    getPortalAccount(), getPortalActivity(), getPortalStatements(),
+  ]);
+  return <PortalOverviewScreen account={account} activity={activity.rows} documents={statements.documents} />;
 }

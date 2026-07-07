@@ -1,0 +1,17 @@
+{
+  "rules": [
+    { "id": "nr-1", "name": "Call due soon", "trigger": "Capital call due in 3 days", "channel": "Email", "recipients": "Ops + Deal Lead", "enabled": true },
+    { "id": "nr-2", "name": "Wire exception", "trigger": "Wire failed / rejected", "channel": "Slack + Email", "recipients": "#ops-alerts, Treasury", "enabled": true },
+    { "id": "nr-3", "name": "Approval overdue", "trigger": "Pending approval > SLA", "channel": "Email", "recipients": "Approver + Manager", "enabled": true },
+    { "id": "nr-4", "name": "Recon break", "trigger": "Break > $100k", "channel": "Email", "recipients": "Controller", "enabled": true },
+    { "id": "nr-5", "name": "Distribution posted", "trigger": "Distribution finalised", "channel": "Email", "recipients": "Investor Relations", "enabled": true },
+    { "id": "nr-6", "name": "New commitment", "trigger": "LP commitment added", "channel": "Email", "recipients": "Compliance (KYC)", "enabled": true },
+    { "id": "nr-7", "name": "Facility utilisation", "trigger": "Utilisation > 80%", "channel": "Email", "recipients": "Treasury", "enabled": false }
+  ],
+  "channels": [
+    { "name": "Email", "detail": "connected", "connected": true },
+    { "name": "Slack", "detail": "#ops-alerts", "connected": true },
+    { "name": "SMS", "detail": "Twilio", "connected": true },
+    { "name": "Webhook", "detail": "add", "connected": false }
+  ]
+}

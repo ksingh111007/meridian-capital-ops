@@ -15,6 +15,8 @@ using Microsoft.OData.ModelBuilder;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
+// Before AddInfrastructure: its "system" audit-actor fallback is TryAdd'd.
+builder.Services.AddScoped<IAuditActorProvider, HttpAuditActorProvider>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
@@ -41,6 +43,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, CapabilityPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, CapabilityAuthorizationHandler>();
 builder.Services.AddScoped<ICurrentUserProvider, HttpCurrentUserProvider>();
+builder.Services.AddScoped<IPortalSessionProvider, HttpPortalSessionProvider>();
 
 var app = builder.Build();
 

@@ -1,0 +1,12 @@
+{
+  "asOf": "Jul 04 close",
+  "source": "Northern Trust feed",
+  "kpis": { "matchedPct": 96.2, "matchedCount": 124, "totalItems": 129, "exceptions": 3, "unmatched": 5, "amountInBreak": 0.42 },
+  "items": [
+    { "id": "rec-1", "date": "2026-07-04", "description": "Redwood — call receipt (#C-2039)", "source": "Northern Trust", "book": 6.2, "custodian": 6.2, "diff": 0.0, "status": "Matched" },
+    { "id": "rec-2", "date": "2026-07-04", "description": "Beacon — facility draw", "source": "Silverpoint", "book": 26.3, "custodian": 26.3, "diff": 0.0, "status": "Matched" },
+    { "id": "rec-3", "date": "2026-07-03", "description": "Distribution #D-119 batch — partial settlement", "source": "Northern Trust", "book": 12.0, "custodian": 11.58, "diff": 0.42, "status": "Break" },
+    { "id": "rec-4", "date": "2026-07-03", "description": "Mgmt fee accrual", "source": "GL / Book", "book": 1.04, "custodian": null, "diff": 1.04, "status": "Unmatched" },
+    { "id": "rec-5", "date": "2026-07-02", "description": "Interest income — Vantage", "source": "Northern Trust", "book": 0.66, "custodian": 0.66, "diff": 0.0, "status": "Matched" }
+  ]
+}

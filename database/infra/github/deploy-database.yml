@@ -1,0 +1,70 @@
+# CI/CD for the database: build the SQL project → validate → publish the dacpac
+# to Azure SQL.
+#
+# NOTE: GitHub only executes workflows under .github/workflows/. This file lives in
+# database/infra/github/ so the repository owner can review it and move it to
+# .github/workflows/deploy-database.yml when ready (pushes from automation can't
+# always create workflow files directly).
+#
+# Required repository secrets:
+#   AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID  (OIDC federated credential;
+#   the identity needs db_owner on the target database)
+# Required repository variables:
+#   SQL_SERVER_FQDN  (e.g. sql-meridian-dev.database.windows.net — Bicep output sqlServerFqdn)
+#   SQL_DATABASE     (e.g. meridian)
+
+name: database
+
+on:
+  push:
+    branches: [main]
+    paths: ['database/**']
+  pull_request:
+    paths: ['database/**']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: database
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      # Guard against drift: the checked-in seed scripts must match the mocks.
+      - run: node tools/generate-seed.mjs && git diff --exit-code scripts/
+      - run: dotnet build Meridian.Database.sqlproj -c Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dacpac
+          path: database/bin/Release/Meridian.Database.dacpac
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dacpac
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Install sqlpackage
+        run: dotnet tool install -g microsoft.sqlpackage
+      - name: Publish dacpac
+        run: >
+          sqlpackage /Action:Publish
+          /SourceFile:Meridian.Database.dacpac
+          /Profile:database/profiles/Azure.publish.xml
+          /TargetConnectionString:"Server=tcp:${{ vars.SQL_SERVER_FQDN }},1433;Database=${{ vars.SQL_DATABASE }};Authentication=Active Directory Default;Encrypt=True;"

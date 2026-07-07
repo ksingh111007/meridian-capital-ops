@@ -1,15 +1,47 @@
 /**
- * Mock API — one registry entry per endpoint, each backed by a JSON file in
- * src/mocks/ via the data layer (src/lib/data.ts).
+ * /api/* — in api mode (DATA_SOURCE=api, the default) this is a thin proxy
+ * that forwards GET and POST requests to the real backend at
+ * `${MERIDIAN_API_URL}/api/<path>`, attaching the dev-auth `X-User-Id` header
+ * (staff user, or the portal contact for portal/* paths). Client-side
+ * mutation POSTs (approve/reject, create call, wire retry, recon assign,
+ * portal message) go through here and now actually persist.
  *
- * The real backend replaces this whole surface; the contract (paths, methods,
- * shapes) is documented in docs/API.md. Screens do NOT fetch these routes —
- * server components call the data layer directly. These routes exist so the
- * API contract is exercisable (curl, integration tests, future client-side
- * data fetching).
+ * In mock mode (DATA_SOURCE=mock) it keeps the previous behavior: GETs are
+ * served from the JSON mocks via the data layer, POSTs acknowledge without
+ * persisting. The contract (paths, methods, shapes) is docs/API.md.
  */
 import { NextResponse } from "next/server";
 import * as data from "@/lib/data";
+import { API_BASE_URL, USE_API, authHeader } from "@/lib/api";
+
+// ---------- api mode: proxy to the backend ----------
+
+async function proxy(req: Request, path: string, method: "GET" | "POST"): Promise<Response> {
+  const search = new URL(req.url).search;
+  const url = `${API_BASE_URL}/api/${path}${search}`;
+  const headers: Record<string, string> = authHeader(path);
+  let body: string | undefined;
+  if (method === "POST") {
+    body = await req.text();
+    if (body) headers["Content-Type"] = req.headers.get("content-type") ?? "application/json";
+  }
+  let res: Response;
+  try {
+    res = await fetch(url, { method, headers, body, cache: "no-store" });
+  } catch {
+    return NextResponse.json(
+      { error: `Meridian API unreachable: ${method} ${url} — is the backend running?` },
+      { status: 502 },
+    );
+  }
+  const text = await res.text();
+  return new NextResponse(text, {
+    status: res.status,
+    headers: { "Content-Type": res.headers.get("content-type") ?? "application/json" },
+  });
+}
+
+// ---------- mock mode: one registry entry per endpoint ----------
 
 const GET_ROUTES: Record<string, (params: string[]) => unknown> = {
   "me": () => data.getCurrentUser(),
@@ -42,7 +74,7 @@ const GET_ROUTES: Record<string, (params: string[]) => unknown> = {
   "portal/contact": () => data.getPortalIrInfo(),
 };
 
-/** Mutations accepted by the mock API. State does not persist (no backend yet) —
+/** Mutations accepted by the mock API. State does not persist in mock mode —
  *  each returns a realistic acknowledgement so client flows can be exercised. */
 const POST_ROUTES = new Set([
   "capital-calls",                 // create call (2c wizard)
@@ -67,12 +99,13 @@ function match(path: string, routes: Iterable<string>): { pattern: string; param
 
 type Ctx = { params: Promise<{ endpoint: string[] }> };
 
-export async function GET(_req: Request, ctx: Ctx) {
+export async function GET(req: Request, ctx: Ctx) {
   const { endpoint } = await ctx.params;
   const path = endpoint.join("/");
+  if (USE_API) return proxy(req, path, "GET");
   const m = match(path, Object.keys(GET_ROUTES));
   if (!m) return NextResponse.json({ error: `Unknown endpoint: GET /api/${path}` }, { status: 404 });
-  const result = GET_ROUTES[m.pattern](m.params);
+  const result = await GET_ROUTES[m.pattern](m.params);
   if (result === undefined) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(result);
 }
@@ -80,10 +113,11 @@ export async function GET(_req: Request, ctx: Ctx) {
 export async function POST(req: Request, ctx: Ctx) {
   const { endpoint } = await ctx.params;
   const path = endpoint.join("/");
+  if (USE_API) return proxy(req, path, "POST");
   const m = match(path, POST_ROUTES);
   if (!m) return NextResponse.json({ error: `Unknown endpoint: POST /api/${path}` }, { status: 404 });
   const body = await req.json().catch(() => ({}));
-  // Mock: acknowledge without persisting. The real backend must enforce RBAC
-  // and append an audit event for every mutation (docs/BUSINESS_RULES.md).
+  // Mock: acknowledge without persisting. The real backend enforces RBAC and
+  // appends an audit event for every mutation (docs/BUSINESS_RULES.md).
   return NextResponse.json({ ok: true, endpoint: m.pattern, received: body, auditEvent: "mock-not-persisted" });
 }

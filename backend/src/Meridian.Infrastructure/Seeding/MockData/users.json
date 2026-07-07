@@ -1,0 +1,23 @@
+{
+  "kpis": { "users": 8, "active": 7, "pendingInvites": 1, "roles": 8 },
+  "users": [
+    { "id": "u-jchen", "name": "Jordan Chen", "initials": "JC", "email": "j.chen@meridiancredit.com", "role": "Ops Analyst", "fundAccess": "All funds", "lastActive": "2m ago", "status": "Active" },
+    { "id": "u-mreyes", "name": "Maria Reyes", "initials": "MR", "email": "m.reyes@meridiancredit.com", "role": "Deal Lead", "fundAccess": "Fund III", "lastActive": "1h ago", "status": "Active" },
+    { "id": "u-spatel", "name": "Sanjay Patel", "initials": "SP", "email": "s.patel@meridiancredit.com", "role": "CIO", "fundAccess": "All funds", "lastActive": "Today", "status": "Active" },
+    { "id": "u-jokafor", "name": "J. Okafor", "initials": "JO", "email": "j.okafor@meridiancredit.com", "role": "Counsel", "fundAccess": "All funds", "lastActive": "Yesterday", "status": "Active" },
+    { "id": "u-dwhitfield", "name": "Dana Whitfield", "initials": "DW", "email": "d.whitfield@meridiancredit.com", "role": "Fund Accountant", "fundAccess": "Fund II, III", "lastActive": "3h ago", "status": "Active" },
+    { "id": "u-pnair", "name": "Priya Nair", "initials": "PN", "email": "p.nair@meridiancredit.com", "role": "Compliance", "fundAccess": "All funds", "lastActive": "Jul 03", "status": "Active" },
+    { "id": "u-talvarez", "name": "Tom Alvarez", "initials": "TA", "email": "t.alvarez@meridiancredit.com", "role": "Ops Manager", "fundAccess": "All funds", "lastActive": "5m ago", "status": "Active" },
+    { "id": "u-akim", "name": "alex.kim@meridiancredit.com", "initials": "AK", "email": "alex.kim@meridiancredit.com", "role": "Ops Analyst", "fundAccess": "Fund III", "lastActive": "invited Jul 04", "status": "Invited" }
+  ],
+  "roles": [
+    { "name": "Ops Analyst", "capabilities": { "Blotter": "edit", "Approvals": "approve", "Wires": "edit", "Recon": "edit", "Ref Data": "view", "Admin": "none" } },
+    { "name": "Deal Lead", "capabilities": { "Blotter": "edit", "Approvals": "approve", "Wires": "view", "Recon": "none", "Ref Data": "view", "Admin": "none" } },
+    { "name": "CIO", "capabilities": { "Blotter": "view", "Approvals": "approve", "Wires": "view", "Recon": "view", "Ref Data": "view", "Admin": "none" } },
+    { "name": "Counsel", "capabilities": { "Blotter": "view", "Approvals": "approve", "Wires": "none", "Recon": "none", "Ref Data": "view", "Admin": "none" } },
+    { "name": "Fund Accountant", "capabilities": { "Blotter": "view", "Approvals": "approve", "Wires": "edit", "Recon": "edit", "Ref Data": "edit", "Admin": "none" } },
+    { "name": "Compliance", "capabilities": { "Blotter": "view", "Approvals": "approve", "Wires": "view", "Recon": "view", "Ref Data": "view", "Admin": "view" } },
+    { "name": "Ops Manager", "capabilities": { "Blotter": "edit", "Approvals": "approve", "Wires": "edit", "Recon": "edit", "Ref Data": "edit", "Admin": "view" } },
+    { "name": "Administrator", "capabilities": { "Blotter": "full", "Approvals": "full", "Wires": "full", "Recon": "full", "Ref Data": "full", "Admin": "full" } }
+  ]
+}

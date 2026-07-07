@@ -1,6 +1,22 @@
 # Project status — session handoff snapshot
 
-_Last updated: 2026-07-06 (end of the initial build session)._
+_Last updated: 2026-07-07 (end of the database-integration session)._
+
+## 2026-07-07 session — real database + full wiring
+
+The stack is now wired end to end: **Azure SQL** (new `../database` dacpac
+project: non-dbo schemas, temporal tables with audit columns + `IsActive`,
+post-deployment seed generated from `src/mocks/`) → **backend** (full docs/API.md
+contract implemented; `Database:Provider=SqlServer` for Azure SQL, self-seeded
+in-memory SQLite for dev/tests; 90 tests green) → **frontend** (`src/lib/data.ts`
+is async fetches to the API; `DATA_SOURCE=mock` env flag restores the old
+JSON-import behavior — `src/mocks/` is intentionally kept for testing and still
+drives both the mock mode and the generated database seed). The `/api/*` catch-all
+is now a proxy, so screen mutations (approve/reject, create call, wire retry,
+recon assign, portal message) persist server-side. Dev principals: staff
+`MERIDIAN_API_USER` (default `u-admin`), portal `MERIDIAN_PORTAL_CONTACT`
+(default `pc-1`); see `.env.example`. Backend quick-start + Azure deployment:
+`../backend/README.md` and `../database/README.md`.
 
 ## Where things stand
 
@@ -29,11 +45,15 @@ normally.** Verify with `git remote -v` + `git push --dry-run` early.
 
 ## What is real vs. mocked
 
-Frontend: real and interactive. Backend: entirely mocked — one JSON per
-endpoint in `src/mocks/`, typed accessors in `src/lib/data.ts`, HTTP mirror at
-`/api/[...endpoint]`. Mutations acknowledge but don't persist (screens update
-optimistically + toast). No authentication; no RBAC route enforcement
-(matrix exists as data and gates the 2b approve buttons only).
+Frontend: real and interactive, fetching the .NET API by default
+(`DATA_SOURCE=mock` falls back to the JSON mocks). Backend: real — full
+docs/API.md contract with server-side RBAC, hash-chained audit, and Azure
+SQL/SQLite persistence; screen mutations persist through the `/api/*` proxy
+(screens still also update optimistically + toast). Still stand-ins:
+authentication (dev `X-User-Id` header scheme for both staff and portal
+contacts — swap to SSO per BACKEND_TODO step 1), admin CRUD dialogs (toasts
+only; no endpoints yet), document downloads, and the waterfall engine
+(distributions are seeded reads).
 
 ## Likely next work (in rough priority)
 

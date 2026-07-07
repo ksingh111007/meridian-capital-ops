@@ -12,6 +12,11 @@ public static class HeaderAuthentication
     public const string Scheme = "MeridianHeader";
     public const string UserIdHeader = "X-User-Id";
     public const string InitialsClaim = "initials";
+
+    /// <summary>Marks a portal-contact principal; carries the linked investor id.</summary>
+    public const string InvestorIdClaim = "investorId";
+    public const string PortalRoleClaim = "portalRole";
+    public const string PortalRole = "PortalContact";
 }
 
 /// <summary>
@@ -37,18 +42,41 @@ public sealed class HeaderAuthenticationHandler(
 
         var db = Context.RequestServices.GetRequiredService<IAppDbContext>();
         var user = await db.StaffUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-        if (user is null || user.Status == "Disabled")
+        if (user is not null)
+        {
+            if (user.Status == "Disabled")
+                return AuthenticateResult.Fail("Unknown or disabled user.");
+
+            var identity = new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Role, user.RoleName),
+                new Claim(HeaderAuthentication.InitialsClaim, user.Initials),
+            ], Scheme.Name);
+
+            return AuthenticateResult.Success(
+                new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
+        }
+
+        // Not staff — the id may be a portal contact (the LP-portal dev stand-in,
+        // replaced by real portal auth alongside staff SSO). Disabled contacts
+        // cannot sign in (BACKEND_TODO acceptance criteria).
+        var contact = await db.PortalContacts.AsNoTracking().FirstOrDefaultAsync(c => c.Id == userId);
+        if (contact is null || contact.Status == "Disabled")
             return AuthenticateResult.Fail("Unknown or disabled user.");
 
-        var identity = new ClaimsIdentity(
+        var portalIdentity = new ClaimsIdentity(
         [
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.RoleName),
-            new Claim(HeaderAuthentication.InitialsClaim, user.Initials),
+            new Claim(ClaimTypes.NameIdentifier, contact.Id),
+            new Claim(ClaimTypes.Name, contact.Name),
+            new Claim(ClaimTypes.Role, HeaderAuthentication.PortalRole),
+            new Claim(HeaderAuthentication.InitialsClaim, contact.Initials),
+            new Claim(HeaderAuthentication.InvestorIdClaim, contact.InvestorId),
+            new Claim(HeaderAuthentication.PortalRoleClaim, contact.Role),
         ], Scheme.Name);
 
         return AuthenticateResult.Success(
-            new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name));
+            new AuthenticationTicket(new ClaimsPrincipal(portalIdentity), Scheme.Name));
     }
 }

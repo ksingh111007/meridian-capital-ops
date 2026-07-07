@@ -17,6 +17,12 @@ public static class Display
 
     public static string ToDisplay(this StageState state) => state.ToString().ToLowerInvariant();
 
+    /// <summary>Module names as the frontend MODULES const spells them ("Ref Data").</summary>
+    public static string ToDisplay(this ModuleName module) =>
+        module == ModuleName.RefData ? "Ref Data" : module.ToString();
+
+    public static string ToDisplay(this Capability capability) => capability.ToString().ToLowerInvariant();
+
     public static string ToDisplay(this AllocationBasis basis) => basis.ToString().ToLowerInvariant();
 
     public static string ShortDate(DateOnly date) => date.ToString("MMM dd", CultureInfo.InvariantCulture);

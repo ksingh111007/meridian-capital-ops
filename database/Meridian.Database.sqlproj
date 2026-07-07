@@ -1,0 +1,16 @@
+<Project DefaultTargets="Build" Sdk="Microsoft.Build.Sql/2.2.0">
+  <PropertyGroup>
+    <Name>Meridian.Database</Name>
+    <ProjectGuid>{9c8f1a2e-4b7d-4f7a-9a3e-2d5c6b8e0f14}</ProjectGuid>
+    <!-- Azure SQL Database target platform. -->
+    <DSP>Microsoft.Data.Tools.Schema.Sql.SqlAzureV12DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033, CI</ModelCollation>
+    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The seed scripts are SQLCMD post-deployment content, not schema objects. -->
+    <Build Remove="scripts/**/*.sql" />
+    <Build Remove="tools/**/*.sql" />
+    <PostDeploy Include="scripts/Script.PostDeployment.sql" />
+  </ItemGroup>
+</Project>
