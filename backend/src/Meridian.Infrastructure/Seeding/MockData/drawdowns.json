@@ -1,0 +1,10 @@
+{
+  "kpis": { "facilityLimit": 300.0, "facilities": 3, "drawn": 184.05, "utilisationPct": 61, "available": 115.95, "weightedRate": "S+2.72%" },
+  "drawdowns": [
+    { "id": "draw-1", "facility": "Sub Line A", "lender": "Silverpoint Bank", "purpose": "Bridge — Project Atlas", "dealId": "deal-atlas", "linkedCallId": "call-2041", "amount": 16.0, "rate": "S+2.50%", "drawDate": "2026-07-02", "repayBy": "2026-08-15", "status": "Outstanding" },
+    { "id": "draw-2", "facility": "Sub Line A", "lender": "Silverpoint Bank", "purpose": "Bridge — Project Beacon", "dealId": "deal-beacon", "linkedCallId": "call-2042", "amount": 26.3, "rate": "S+2.50%", "drawDate": "2026-07-03", "repayBy": "2026-08-20", "status": "Outstanding" },
+    { "id": "draw-3", "facility": "NAV Facility", "lender": "Meridian Credit Partners", "purpose": "Portfolio — Fund III", "amount": 120.0, "rate": "S+3.00%", "drawDate": "2026-06-15", "repayBy": "2026-12-31", "status": "Outstanding" },
+    { "id": "draw-4", "facility": "Sub Line B", "lender": "Harbor Trust", "purpose": "Bridge — Project Cedar", "dealId": "deal-cedar", "linkedCallId": "call-2036", "amount": 6.75, "rate": "S+2.75%", "drawDate": "2026-06-28", "repayBy": null, "status": "Repaid" },
+    { "id": "draw-5", "facility": "Sub Line A", "lender": "Silverpoint Bank", "purpose": "Bridge — Project Echo", "dealId": "deal-echo", "linkedCallId": "call-2043", "amount": 15.0, "rate": "S+2.50%", "drawDate": "2026-07-04", "repayBy": "2026-08-30", "status": "Requested" }
+  ]
+}

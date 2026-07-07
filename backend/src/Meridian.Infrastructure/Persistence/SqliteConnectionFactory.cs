@@ -30,5 +30,8 @@ public sealed class SqliteConnectionFactory : IDbConnectionFactory, IDisposable
         return connection;
     }
 
+    /// <summary>SQLite has no schemas — tables go by their bare name.</summary>
+    public string Table(string schema, string name) => $"\"{name}\"";
+
     public void Dispose() => _keepAlive.Dispose();
 }

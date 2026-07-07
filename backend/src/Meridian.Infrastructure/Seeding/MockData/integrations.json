@@ -1,0 +1,11 @@
+{
+  "kpis": { "connected": 6, "warnings": 1, "errors": 0, "lastSync": "09:40", "lastSyncAgo": "2m ago" },
+  "integrations": [
+    { "name": "Northern Trust", "type": "Custodian", "direction": "Inbound", "lastSync": "09:40", "status": "Connected" },
+    { "name": "State Street", "type": "Custodian", "direction": "Inbound", "lastSync": "09:38", "status": "Connected" },
+    { "name": "Silverpoint Bank", "type": "Bank / Facility", "direction": "Two-way", "lastSync": "09:40", "status": "Connected" },
+    { "name": "Investran", "type": "GL / Accounting", "direction": "Two-way", "lastSync": "09:15", "status": "Connected" },
+    { "name": "SOFR Rate Feed", "type": "Market Data", "direction": "Inbound", "lastSync": "09:00", "status": "Connected" },
+    { "name": "SWIFT Gateway", "type": "Payments", "direction": "Outbound", "lastSync": "09:31", "status": "Warning", "warning": "Signing certificate expires Jul 13. Rotate credentials to avoid outbound wire disruption." }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "deal-atlas": {
+    "fairValue": 86.1, "facility": 100.0, "drawn": 80.0, "maturity": "Mar 2028", "spreadFloor": "SOFR + 2.50% · 0.75%", "upfrontFeePct": 1.75,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 1.02, "principalBalance": 80.0 },
+      { "date": "2026-03-31", "type": "Interest", "amount": 1.02, "principalBalance": 80.0 },
+      { "date": "2025-11-14", "type": "Draw", "amount": -20.0, "principalBalance": 80.0 },
+      { "date": "2025-06-20", "type": "Initial draw", "amount": -60.0, "principalBalance": 60.0 }
+    ],
+    "risk": { "internalRating": "B+", "trend": "Stable", "covenants": "In compliance", "netLeverage": "3.8×", "lastReview": "May 2026" },
+    "lpExposure": [ { "investor": "Redwood Pension", "amount": 15.5 }, { "investor": "Cascade Family Office", "amount": 23.2 } ],
+    "documents": ["Credit Agreement.pdf", "Q2 Compliance Cert.pdf"]
+  },
+  "deal-beacon": {
+    "fairValue": 112.4, "facility": 110.0, "drawn": 104.0, "maturity": "Jun 2029", "spreadFloor": "SOFR + 2.50% · 1.00%", "upfrontFeePct": 2.0,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 1.31, "principalBalance": 104.0 },
+      { "date": "2026-04-12", "type": "Draw", "amount": -14.0, "principalBalance": 104.0 },
+      { "date": "2026-03-31", "type": "Interest", "amount": 1.13, "principalBalance": 90.0 },
+      { "date": "2025-12-31", "type": "Interest", "amount": 1.13, "principalBalance": 90.0 },
+      { "date": "2025-09-15", "type": "Initial draw", "amount": -90.0, "principalBalance": 90.0 }
+    ],
+    "risk": { "internalRating": "BB−", "trend": "Stable", "covenants": "In compliance", "netLeverage": "4.2×", "lastReview": "Jun 2026" },
+    "lpExposure": [ { "investor": "Cascade Family Office", "amount": 14.4 }, { "investor": "Summit Investments", "amount": 11.9 } ],
+    "documents": ["Credit Agreement.pdf", "Amendment No. 1.pdf", "Q2 Compliance Cert.pdf"]
+  },
+  "deal-cedar": {
+    "fairValue": 24.6, "facility": 60.0, "drawn": 22.0, "maturity": "Sep 2027", "spreadFloor": "SOFR + 2.75% · 1.00%", "upfrontFeePct": 2.0,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 0.42, "principalBalance": 22.0 },
+      { "date": "2026-02-15", "type": "Repayment", "amount": 18.0, "principalBalance": 22.0 },
+      { "date": "2024-08-01", "type": "Initial draw", "amount": -40.0, "principalBalance": 40.0 }
+    ],
+    "risk": { "internalRating": "B", "trend": "Improving", "covenants": "In compliance", "netLeverage": "3.1×", "lastReview": "Apr 2026" },
+    "lpExposure": [ { "investor": "Cascade Family Office", "amount": 8.2 }, { "investor": "Granite State Insurance", "amount": 9.6 } ],
+    "documents": ["Credit Agreement.pdf"]
+  },
+  "deal-delta": {
+    "fairValue": 38.7, "facility": 48.0, "drawn": 40.0, "maturity": "Dec 2027", "spreadFloor": "SOFR + 3.25% · 1.00%", "upfrontFeePct": 2.25,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 0.71, "principalBalance": 40.0 },
+      { "date": "2026-03-31", "type": "Interest (PIK)", "amount": 0.0, "principalBalance": 40.0 },
+      { "date": "2023-11-30", "type": "Initial draw", "amount": -40.0, "principalBalance": 40.0 }
+    ],
+    "risk": { "internalRating": "B−", "trend": "Deteriorating", "covenants": "Leverage waiver in place", "netLeverage": "6.1×", "lastReview": "Jun 2026" },
+    "lpExposure": [ { "investor": "Redwood Pension", "amount": 9.0 }, { "investor": "Oakmont Trust", "amount": 5.0 } ],
+    "documents": ["Credit Agreement.pdf", "Waiver Letter — Q2.pdf"]
+  },
+  "deal-echo": {
+    "fairValue": 96.8, "facility": 95.0, "drawn": 88.0, "maturity": "Feb 2030", "spreadFloor": "SOFR + 2.50% · 0.75%", "upfrontFeePct": 1.5,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 1.12, "principalBalance": 88.0 },
+      { "date": "2025-02-28", "type": "Initial draw", "amount": -88.0, "principalBalance": 88.0 }
+    ],
+    "risk": { "internalRating": "BB−", "trend": "Stable", "covenants": "In compliance", "netLeverage": "4.0×", "lastReview": "Jun 2026" },
+    "lpExposure": [ { "investor": "Summit Investments", "amount": 20.0 }, { "investor": "Ironwood Capital", "amount": 18.0 } ],
+    "documents": ["Credit Agreement.pdf", "Q2 Compliance Cert.pdf"]
+  },
+  "deal-foxtrot": {
+    "fairValue": 14.9, "facility": 52.0, "drawn": 18.0, "maturity": "Jun 2026 (extended)", "spreadFloor": "SOFR + 3.00% · 1.00%", "upfrontFeePct": 2.5,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest (unpaid)", "amount": 0.0, "principalBalance": 18.0 },
+      { "date": "2025-12-15", "type": "Partial repayment", "amount": 12.0, "principalBalance": 18.0 },
+      { "date": "2022-05-10", "type": "Initial draw", "amount": -30.0, "principalBalance": 30.0 }
+    ],
+    "risk": { "internalRating": "CCC", "trend": "Deteriorating", "covenants": "In default — forbearance", "netLeverage": "8.4×", "lastReview": "Jul 2026" },
+    "lpExposure": [ { "investor": "Granite State Insurance", "amount": 7.9 }, { "investor": "Cascade Family Office", "amount": 6.1 } ],
+    "documents": ["Credit Agreement.pdf", "Forbearance Agreement.pdf", "Restructuring Memo.pdf"]
+  },
+  "deal-gale": {
+    "fairValue": 72.9, "facility": 70.0, "drawn": 66.0, "maturity": "Oct 2028", "spreadFloor": "SOFR + 4.00% · 1.25%", "upfrontFeePct": 2.0,
+    "cashflows": [
+      { "date": "2026-06-30", "type": "Interest", "amount": 1.55, "principalBalance": 66.0 },
+      { "date": "2025-10-20", "type": "Initial draw", "amount": -66.0, "principalBalance": 66.0 }
+    ],
+    "risk": { "internalRating": "B+", "trend": "Stable", "covenants": "In compliance", "netLeverage": "n/a (asset-backed)", "lastReview": "May 2026" },
+    "lpExposure": [ { "investor": "Ironwood Capital", "amount": 14.2 }, { "investor": "Blue Harbor Endowment", "amount": 8.8 } ],
+    "documents": ["Credit Agreement.pdf", "Appraisal — 2026.pdf"]
+  }
+}

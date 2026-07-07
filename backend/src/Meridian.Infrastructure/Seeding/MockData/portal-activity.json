@@ -1,0 +1,14 @@
+{
+  "stats": { "paidIn": 41.2, "distributionsReceived": 18.6, "netInvested": 22.6, "nextCallDue": "2026-07-08" },
+  "rows": [
+    { "date": "2026-07-08", "fund": "Fund III", "type": "Capital Call", "reference": "#C-2041", "amount": -8.2, "status": "Due" },
+    { "date": "2026-07-03", "fund": "Fund II", "type": "Distribution", "reference": "#D-119", "amount": 2.1, "status": "Processing" },
+    { "date": "2026-07-01", "fund": "Fund II", "type": "Capital Call", "reference": "#C-2039", "amount": -6.2, "status": "Funded" },
+    { "date": "2026-06-30", "fund": "Fund III", "type": "Distribution", "reference": "#D-117", "amount": 3.4, "status": "Paid" },
+    { "date": "2026-03-31", "fund": "Fund II", "type": "Distribution", "reference": "#D-116", "amount": 1.75, "status": "Paid" },
+    { "date": "2026-03-15", "fund": "Fund III", "type": "Capital Call", "reference": "#C-2038", "amount": -5.0, "status": "Funded" },
+    { "date": "2025-12-20", "fund": "Fund III", "type": "Distribution", "reference": "#D-115", "amount": 1.8, "status": "Paid" },
+    { "date": "2025-11-30", "fund": "Fund II", "type": "Capital Call", "reference": "#C-2031", "amount": -3.5, "status": "Funded" },
+    { "date": "2025-09-15", "fund": "Fund III", "type": "Capital Call", "reference": "#C-2025", "amount": -9.0, "status": "Funded" }
+  ]
+}

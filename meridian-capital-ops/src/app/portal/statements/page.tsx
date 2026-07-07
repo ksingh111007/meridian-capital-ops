@@ -5,7 +5,7 @@ import { PortalStatementsScreen } from "@/screens/portal/PortalStatementsScreen"
 export const metadata: Metadata = { title: "Statements · Investor Portal" };
 
 /** Screen 6f — filterable document library with downloads. */
-export default function PortalStatementsPage() {
-  const { totalCount, documents } = getPortalStatements();
+export default async function PortalStatementsPage() {
+  const { totalCount, documents } = await getPortalStatements();
   return <PortalStatementsScreen totalCount={totalCount} documents={documents} />;
 }

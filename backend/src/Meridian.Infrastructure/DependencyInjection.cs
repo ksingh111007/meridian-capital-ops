@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
 
 namespace Meridian.Infrastructure;
@@ -17,17 +18,34 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Default")
             ?? "DataSource=meridian;Mode=Memory;Cache=Shared";
 
-        services.AddSingleton(_ => new SqliteConnectionFactory(connectionString));
-        services.AddSingleton<IDbConnectionFactory>(sp => sp.GetRequiredService<SqliteConnectionFactory>());
-        services.AddDbContext<AppDbContext>((sp, options) =>
+        if (UseSqlServer(configuration))
         {
-            // Touch the factory first: its keep-alive connection must exist before
-            // EF opens against the shared in-memory database.
-            _ = sp.GetRequiredService<SqliteConnectionFactory>();
-            options.UseSqlite(connectionString);
-        });
+            // Azure SQL. Schema and seed data are owned by the database/ dacpac
+            // project — the API never creates or migrates objects here.
+            services.AddSingleton<IDbConnectionFactory>(_ => new SqlServerConnectionFactory(connectionString));
+            services.AddDbContext<AppDbContext>((sp, options) => options
+                .UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure())
+                .AddInterceptors(sp.GetRequiredService<AuditColumnsInterceptor>()));
+        }
+        else
+        {
+            // Dev/test store: shared-cache in-memory SQLite, created + seeded on boot.
+            services.AddSingleton(_ => new SqliteConnectionFactory(connectionString));
+            services.AddSingleton<IDbConnectionFactory>(sp => sp.GetRequiredService<SqliteConnectionFactory>());
+            services.AddDbContext<AppDbContext>((sp, options) =>
+            {
+                // Touch the factory first: its keep-alive connection must exist before
+                // EF opens against the shared in-memory database.
+                _ = sp.GetRequiredService<SqliteConnectionFactory>();
+                options.UseSqlite(connectionString)
+                    .AddInterceptors(sp.GetRequiredService<AuditColumnsInterceptor>());
+            });
+        }
+
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        services.AddScoped<AuditColumnsInterceptor>();
         services.AddScoped<DatabaseInitializer>();
+        services.TryAddScoped<IAuditActorProvider, SystemAuditActorProvider>();
 
         services.AddSingleton<IClock, ConfigurableClock>();
         services.AddScoped<IAuditTrail, AuditTrail>();
@@ -46,6 +64,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    /// <summary>Database:Provider selects the store — "SqlServer" for Azure SQL, default SQLite.</summary>
+    public static bool UseSqlServer(IConfiguration configuration) =>
+        string.Equals(configuration["Database:Provider"], "SqlServer", StringComparison.OrdinalIgnoreCase);
 
     private static void Schedule<TJob>(IServiceCollectionQuartzConfigurator quartz, JobKey key, string? cron)
         where TJob : IJob

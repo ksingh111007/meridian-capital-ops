@@ -5,6 +5,7 @@ import { NewCallWizard } from "@/screens/NewCallWizard";
 export const metadata: Metadata = { title: "New Capital Call" };
 
 /** Screen 2c — the 5-step call creation wizard. */
-export default function NewCallPage() {
-  return <NewCallWizard deals={getDeals()} funds={getFunds().funds} investors={getInvestors().investors} />;
+export default async function NewCallPage() {
+  const [deals, funds, investors] = await Promise.all([getDeals(), getFunds(), getInvestors()]);
+  return <NewCallWizard deals={deals} funds={funds.funds} investors={investors.investors} />;
 }

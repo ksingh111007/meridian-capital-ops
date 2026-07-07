@@ -1,6 +1,6 @@
 # Workspace guide (read me first)
 
-Three things live in this repository:
+Four things live in this repository:
 
 1. **`meridian-capital-ops/`** — the product front-end: a Next.js 16 app for a
    private-credit fund-operations platform (capital calls, distributions,
@@ -8,12 +8,18 @@ Three things live in this repository:
    here.** Its own `CLAUDE.md`/`AGENTS.md` and `docs/` folder carry the working
    rules — start with `meridian-capital-ops/docs/STATUS.md`, then `README.md`.
 2. **`backend/`** — the .NET 8 API (clean architecture, controllers, EF Core +
-   Dapper over in-memory SQLite, Quartz jobs, OData, xUnit with an
-   integration-test emphasis). **All backend work happens here** — start with
-   `backend/README.md`. It implements `meridian-capital-ops/docs/API.md`
-   beginning with the capital-call approval pipeline; the frontend still runs
-   on its own mocks until the swap described in ARCHITECTURE.md §Swap.
-3. **`project/` + `chats/` + root `README.md`** — the original Claude Design
+   Dapper, Quartz jobs, OData, xUnit with an integration-test emphasis). **All
+   backend work happens here** — start with `backend/README.md`. It implements
+   the full `meridian-capital-ops/docs/API.md` contract; persistence is Azure
+   SQL (`Database:Provider=SqlServer`) or a self-seeded in-memory SQLite store
+   for dev/tests.
+3. **`database/`** — the SQL database project (SDK-style, builds to a dacpac,
+   deploys to Azure SQL). Owns the schema — non-dbo schemas, temporal tables
+   with audit columns and `IsActive` — plus the post-deployment seed generated
+   from the frontend mocks. **All database work happens here** — start with
+   `database/README.md`; table files and seeds are generated (see its tools/),
+   never hand-edited.
+4. **`project/` + `chats/` + root `README.md`** — the original Claude Design
    wireframe handoff the app was built from. **Reference only — never edit.**
    The HTML prototypes are not production code; `project/support.js` must not
    be ported. The design's developer spec is
@@ -28,15 +34,19 @@ aesthetic was deliberately discarded per the handoff instructions.
 ## Quick commands
 
 ```bash
-cd meridian-capital-ops
-npm install
-npm run dev            # http://localhost:3000 → /portfolio (internal) · /portal (LP view)
-npx tsc --noEmit       # must stay clean (strict)
-npm run build          # must pass before committing significant work
-
 cd backend
 dotnet test            # domain unit + API integration tests — must stay green
 dotnet run --project src/Meridian.Api   # http://localhost:8080 (Swagger at /swagger)
+
+cd meridian-capital-ops
+npm install
+npm run dev            # http://localhost:3000 → /portfolio (internal) · /portal (LP view)
+                       # fetches the backend; DATA_SOURCE=mock to run standalone on the JSON mocks
+npx tsc --noEmit       # must stay clean (strict)
+npm run build          # must pass before committing significant work
+
+cd database
+dotnet build Meridian.Database.sqlproj  # → bin/Debug/Meridian.Database.dacpac — must build clean
 ```
 
 ## Ground rules
@@ -46,14 +56,18 @@ dotnet run --project src/Meridian.Api   # http://localhost:8080 (Swagger at /swa
   accessors, and existing patterns before writing anything new. If a new
   abstraction is needed, make it once, make it shared, and follow
   `meridian-capital-ops/docs/CONVENTIONS.md`.
-- The frontend still runs entirely on mocks: every API call is mocked by one
-  JSON file in `meridian-capital-ops/src/mocks/` behind `src/lib/data.ts`.
-  The backend in `backend/` implements a growing subset of the contract
-  (build order in `meridian-capital-ops/docs/BACKEND_TODO.md`) and must honor
-  `docs/API.md`, `docs/DATA_MODEL.md`, `docs/BUSINESS_RULES.md`; keep its seed
-  data consistent with the mock story.
+- The frontend fetches the backend API through `src/lib/data.ts` (async
+  accessors; `DATA_SOURCE=mock` swaps back to the JSON files in `src/mocks/`,
+  which are deliberately kept — they drive mock mode AND generate the database
+  seed). The backend honors `docs/API.md`, `docs/DATA_MODEL.md`,
+  `docs/BUSINESS_RULES.md` (remaining build order in
+  `meridian-capital-ops/docs/BACKEND_TODO.md`).
+- The EF model (`backend/.../AppDbContext`) is the schema source of truth: after
+  changing it, regenerate the database project's table files and seeds
+  (`database/README.md` § "The schema is generated from the EF model").
 - Frontend changes follow `meridian-capital-ops/docs/CONVENTIONS.md`
   (server page → client screen pattern, shared UI kit, semantic tokens only).
 - Mock data is one internally consistent story (see DATA_MODEL.md
-  "Cross-screen consistency") — keep it consistent when editing, and keep the
-  mock "today" = **2026-07-05** (`TODAY` in `src/lib/format.ts`).
+  "Cross-screen consistency") — keep it consistent when editing, keep the
+  story "today" = **2026-07-05** (`TODAY` in `src/lib/format.ts`, `BusinessDate`
+  in the backend), and regenerate `database/scripts/seed/` after editing mocks.

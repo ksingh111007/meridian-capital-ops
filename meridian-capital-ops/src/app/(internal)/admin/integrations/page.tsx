@@ -5,7 +5,7 @@ import { IntegrationsScreen } from "@/screens/admin/IntegrationsScreen";
 export const metadata: Metadata = { title: "Integrations" };
 
 /** Screen 5f — custodian / bank / GL / market-data connections. */
-export default function IntegrationsPage() {
-  const { kpis, integrations } = getIntegrations();
+export default async function IntegrationsPage() {
+  const { kpis, integrations } = await getIntegrations();
   return <IntegrationsScreen kpis={kpis} integrations={integrations} />;
 }

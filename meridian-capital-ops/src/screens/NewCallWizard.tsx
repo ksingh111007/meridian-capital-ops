@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Deal, Fund, Investor } from "@/lib/types";
 import { money, pct } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { Button } from "@/components/ui/Button";
 import { Field, Select, TextInput, Toggle } from "@/components/ui/controls";
 import { useToast } from "@/components/ui/Toast";
@@ -59,11 +60,14 @@ export function NewCallWizard({ deals, funds, investors }: { deals: Deal[]; fund
   ][step];
 
   async function create() {
-    await fetch("/api/capital-calls", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dealId, amount, dueDate, basis, allocations: allocations.map(({ id, amount }) => ({ investorId: id, amount })) }),
-    }).catch(() => null);
+    const { ok, error } = await postJson("capital-calls", {
+      dealId, amount, dueDate, basis,
+      allocations: allocations.map(({ id, amount }) => ({ investorId: id, amount })),
+    });
+    if (!ok) {
+      toast.push({ kind: "error", title: "Capital call not created", detail: error });
+      return;
+    }
     toast.push({ kind: "success", title: "Capital call created", detail: `${deal.name} · ${money(amount)} · enters the pipeline at stage 1`, actionLabel: "Undo" });
     router.push("/capital-calls");
   }

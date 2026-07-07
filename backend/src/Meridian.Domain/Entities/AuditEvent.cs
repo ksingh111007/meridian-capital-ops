@@ -15,6 +15,13 @@ public class AuditEvent
     public string Subject { get; set; } = "";
     public string Detail { get; set; } = "";
     public string Seal { get; set; } = "";
+
+    /// <summary>
+    /// The seal this event chains from (null for the genesis event). A unique
+    /// index enforces one successor per seal, so concurrent writers or a retried
+    /// commit cannot silently fork the chain — the second insert fails instead.
+    /// </summary>
+    public string? PreviousSeal { get; set; }
 }
 
 /// <summary>Outbox row written by the notification port's default implementation.</summary>

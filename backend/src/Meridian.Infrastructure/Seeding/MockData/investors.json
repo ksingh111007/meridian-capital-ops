@@ -1,0 +1,41 @@
+{
+  "kpis": { "investors": 48, "commitments": 2450, "kycVerifiedPct": 94, "kycInReview": 3, "wireOnFilePct": 92, "wireMissing": 4 },
+  "investors": [
+    {
+      "id": "inv-redwood", "name": "Redwood Pension", "type": "Public Pension",
+      "commitments": [ { "fundId": "fund-iii", "amount": 40.0, "called": 28.4 }, { "fundId": "fund-ii", "amount": 18.0, "called": 17.3 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": true,
+      "profile": { "bank": "Northern Trust", "abaMasked": "•••• 0021", "accountMasked": "•••• 4471", "bankingVerified": "Jun 2026", "kycDocs": "W-9, LPA, entity", "kycReviewDue": "Jun 2027" }
+    },
+    {
+      "id": "inv-blueharbor", "name": "Blue Harbor Endowment", "type": "Endowment",
+      "commitments": [ { "fundId": "fund-iii", "amount": 25.0, "called": 17.0 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": true
+    },
+    {
+      "id": "inv-cascade", "name": "Cascade Family Office", "type": "Family Office",
+      "commitments": [ { "fundId": "fund-iii", "amount": 60.0, "called": 42.9 }, { "fundId": "fund-ii", "amount": 30.0, "called": 28.8 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": true
+    },
+    {
+      "id": "inv-granite", "name": "Granite State Insurance", "type": "Insurance",
+      "commitments": [ { "fundId": "fund-ii", "amount": 35.0, "called": 33.6 } ],
+      "kycStatus": "In review", "wireInstructionsOnFile": true
+    },
+    {
+      "id": "inv-summit", "name": "Summit Investments", "type": "Fund of Funds",
+      "commitments": [ { "fundId": "fund-iii", "amount": 50.0, "called": 36.0 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": true
+    },
+    {
+      "id": "inv-oakmont", "name": "Oakmont Trust", "type": "Private Trust",
+      "commitments": [ { "fundId": "fund-ii", "amount": 20.0, "called": 19.2 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": false
+    },
+    {
+      "id": "inv-ironwood", "name": "Ironwood Capital", "type": "Asset Manager",
+      "commitments": [ { "fundId": "fund-iii", "amount": 45.0, "called": 31.5 } ],
+      "kycStatus": "Verified", "wireInstructionsOnFile": true
+    }
+  ]
+}

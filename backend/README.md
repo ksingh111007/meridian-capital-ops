@@ -1,10 +1,13 @@
 # Meridian Capital Ops — backend
 
 ASP.NET Core 8 (LTS) API for the fund-operations platform. Implements the
-contract in [`../meridian-capital-ops/docs/API.md`](../meridian-capital-ops/docs/API.md)
-starting with the highest-value vertical slice — the **capital-call approval
-pipeline** — plus distributions reads, the computed needs-attention inbox, the
-hash-chained audit log, background automation, and an OData query surface.
+**full contract** in [`../meridian-capital-ops/docs/API.md`](../meridian-capital-ops/docs/API.md):
+the capital-call approval pipeline, distributions, portfolio + deal drill-downs,
+fund ops (drawdowns, wires, cash, reconciliation), the admin surface, the
+investor portal, the computed needs-attention inbox, the hash-chained audit log,
+background automation, and an OData query surface. Persistence is Azure SQL
+(schema + seed owned by the [`../database`](../database) dacpac project) or a
+self-seeded in-memory SQLite store for dev/tests.
 
 ```
 backend/
@@ -26,13 +29,23 @@ backend/
 
 ```bash
 cd backend
-dotnet test                                   # 68 tests: domain unit + API integration
+dotnet test                                   # 93 tests: domain unit + API integration
 dotnet run --project src/Meridian.Api        # http://localhost:8080 (Swagger at /swagger)
 # or
 docker compose up --build
 ```
 
-Authenticate requests with `X-User-Id: <seeded staff user>` (see below). Try the
+Run as above and the API self-hosts an in-memory SQLite store. To run against
+**Azure SQL** (schema + seed deployed by the [`../database`](../database)
+dacpac project) set two settings and start it the same way:
+
+```bash
+Database__Provider=SqlServer
+ConnectionStrings__Default="Server=tcp:<server>.database.windows.net,1433;Database=meridian;Authentication=Active Directory Default;Encrypt=True;"
+```
+
+Authenticate requests with `X-User-Id: <seeded staff user>` (see below), or a
+portal contact id (e.g. `pc-1`) for the `/api/portal/*` endpoints. Try the
 request files in `http/` — e.g. `http/capital-calls.http` walks create → approve →
 reject, `http/admin-ops.http` fires background jobs on demand.
 
@@ -62,26 +75,42 @@ Clean architecture with dependencies pointing inward
 - **Api** — controller-based endpoints only (no minimal APIs), RFC 7807
   ProblemDetails errors, Swagger, health checks at `/healthz`.
 
-### Data: EF Core + Dapper over in-memory SQLite
+### Data: Azure SQL (dacpac-owned) or in-memory SQLite, behind one EF model
 
-Persistence is **EF Core on shared-cache in-memory SQLite** — a real relational
-database with the lifetime of the process, so there is no migration baggage
-while the schema is still moving. The dedicated database project can later point
-`AppDbContext` at SQL Server/PostgreSQL and add migrations; `IAppDbContext`
-consumers won't change. Two dev-only conveniences to know about:
+Persistence is EF Core + Dapper with a config-selected provider
+(`Database:Provider`):
 
-- decimals are stored as `REAL` (SQLite has no decimal affinity); amounts are
-  2-dp USD millions so this is lossless — production maps native `decimal`.
-- `EnsureCreated()` replaces migrations until the DB project exists.
+- **`SqlServer` — Azure SQL.** The schema is owned by the
+  [`../database`](../database) SQL project (dacpac): purpose schemas
+  (`ref`/`ops`/`admin`/`audit`/`portal`, never dbo), every table system-versioned
+  (temporal, history in `hist`) with audit columns and an `IsActive` flag, seed
+  data deployed post-deployment. The API only reads/writes — it never creates,
+  migrates, or seeds objects on this provider. Native `decimal(18,2)` columns.
+- **SQLite (default) — dev & tests.** Shared-cache in-memory store created via
+  `EnsureCreated()` and seeded on boot, so `dotnet run` works with nothing else
+  installed. Decimals are stored as `REAL` (lossless for 2-dp USD millions);
+  schemas are ignored (SQLite has none) but table names match the SQL project.
+
+The EF model is the single source of truth for both: the database project's
+table files are generated from `AppDbContext`
+(`database/tools/generate-tables.py`), so the two stores cannot drift. Every
+table also carries shadow **audit columns** (`CreatedAtUtc/CreatedBy/
+ModifiedAtUtc/ModifiedBy`, plus `IsActive`) stamped by a save interceptor with
+the authenticated principal.
 
 **Dapper** is used where hand-written SQL beats the ORM: the needs-attention
-inbox (`NeedsAttentionService`) aggregates across calls/allocations/stages per
-caller. Writes always go through EF Core so change tracking + audit stay intact.
+inbox (`NeedsAttentionService`) aggregates across calls/allocations/stages/wires/
+recon/integrations per caller; `IDbConnectionFactory.Table(schema, name)` keeps
+that SQL portable across the two providers. Writes always go through EF Core so
+change tracking + audit stay intact.
 
-Seed data = the frontend mock story (`StorySeed`: #C-2041 at Legal, #C-2039
-returned with two overdue wires, #D-119 with Blocked/Exception payouts, the
-staff roster and role matrix) plus deterministic **Bogus** volume data
-(`FakeDataSeed`, fixed seed → identical rows in every run and test host).
+SQLite seed data = the frontend mock story (`StorySeed` + `MockDataSeed`, the
+latter reading embedded copies of `src/mocks/*.json`: #C-2041 at Legal, #C-2039
+returned with two overdue wires, #D-119 with Blocked/Exception payouts, wires/
+recon/treasury/portal read models, the staff roster and role matrix) plus
+deterministic **Bogus** volume data (`FakeDataSeed`, fixed seed → identical rows
+in every run and test host). The Azure SQL seed is generated from the same mock
+JSONs (`database/tools/generate-seed.mjs`), so both stores serve the same story.
 
 ### AuthN / AuthZ
 
@@ -105,7 +134,9 @@ Seeded users: `u-jchen` (Ops Analyst) · `u-mreyes` (Deal Lead) · `u-spatel`
 
 - **Every mutation appends** to the global **hash-chained audit log**
   (`seal_n = H(seal_{n-1} ‖ event_n)`); `GET /api/admin/audit` re-verifies the
-  chain on read (`kpis.chainValid`).
+  chain on read (`kpis.chainValid`). Each event records the seal it chains from
+  under a unique index, so concurrent API instances (or a retried commit) on the
+  shared Azure SQL database cannot silently fork the chain.
 - Approvals **notify the next approver** through the notification port (default
   adapter writes an outbox row + log).
 - Business errors are typed (`DomainException` Validation/NotFound/Forbidden/
@@ -132,10 +163,22 @@ generalizes to more entity sets by adding them to the EDM in `Program.cs`.
 
 ## Endpoints implemented (of docs/API.md)
 
-`GET /api/me` · `GET/POST /api/capital-calls` · `GET /api/capital-calls/{id}` ·
-`POST /api/capital-calls/{id}/approve|reject` · `GET /api/workflows/capital-calls` ·
-`GET /api/distributions[/{id}]` · `GET /api/needs-attention` ·
-`GET /api/admin/audit` · plus additive `GET|POST /api/ops/jobs*` and `/odata/Deals`.
+The **full contract**:
+
+`GET /api/me` · `GET /api/portfolio/summary` · `GET /api/deals[/{id}]` ·
+`GET /api/needs-attention` · `GET/POST /api/capital-calls` ·
+`GET /api/capital-calls/{id}` · `POST /api/capital-calls/{id}/approve|reject` ·
+`GET /api/workflows/capital-calls` · `GET /api/distributions[/{id}]` ·
+`GET /api/drawdowns` · `GET /api/wires` · `POST /api/wires/{id}/retry` ·
+`GET /api/cash/position` · `GET /api/reconciliation` ·
+`POST /api/reconciliation/{id}/assign` · `GET /api/admin/users|funds|investors|
+reference|integrations|notification-rules|audit|investor-access` ·
+`GET /api/portal/session|account|investments|activity|statements|tax|contact` ·
+`POST /api/portal/messages` · plus additive `GET|POST /api/ops/jobs*` and
+`/odata/Deals`.
+
+Portal endpoints require a portal-contact session and are always scoped to that
+LP (disabled contacts can't sign in; Tax-only contacts see tax + IR only).
 
 Response shapes mirror `src/lib/types.ts` exactly (camelCase, `"In Review"`
 statuses, `"Jul 02"` stage dates, amounts in USD millions); extra fields
@@ -144,14 +187,17 @@ statuses, `"Jul 02"` stage dates, amounts in USD millions); extra fields
 ## Testing
 
 `dotnet test` runs both projects. The weight is deliberately on
-**integration tests** (45 of 68): each test class boots the real host via
+**integration tests** (70 of 93): each test class boots the real host via
 `WebApplicationFactory` with its own isolated in-memory database and exercises
 HTTP → auth → RBAC → services → EF/Dapper/SQLite → Quartz end-to-end. Covered:
 the full 9-stage approval pipeline, escalation gating, creation validation
 (reconciliation, unknown deal/investor, past due date), RBAC denials, the
-Dapper inbox, waterfall invariants, audit-chain verification after mutations,
-and the overdue sweep fired through the ops endpoint and observed via the API.
-Domain unit tests pin the pure rules (rounding, transitions, seal chaining).
+Dapper inbox (approvals, overdue, wire exceptions, recon breaks, integration
+warnings), all the swap read models, wire retry + recon assignment, portal
+scoping (disabled/tax-only/staff rejection), waterfall invariants, audit-chain
+verification after mutations, and the overdue sweep fired through the ops
+endpoint and observed via the API. Domain unit tests pin the pure rules
+(rounding, transitions, seal chaining).
 
 ## Deployment
 
@@ -163,16 +209,20 @@ Domain unit tests pin the pure rules (rounding, transitions, seal chaining).
 - **CI/CD**: `infra/github/deploy-backend.yml` is a ready GitHub Actions
   workflow (build → test → `az acr build` → point the web app at the new tag);
   move it to `.github/workflows/` to activate it.
+- **Database**: provision Azure SQL and deploy the schema + seed with the
+  [`../database`](../database) dacpac project, then set `Database__Provider=SqlServer`
+  and `ConnectionStrings__Default` on the web app (plus `BusinessDate=2026-07-05`
+  for demo parity with the seeded story).
 
 ## Roadmap (per docs/BACKEND_TODO.md build order)
 
-1. Real staff SSO + LP portal auth (replace the header scheme).
-2. Remaining read models: portfolio summary, deals detail, drawdowns, wires,
-   cash position, recon, admin, portal — then swap the frontend's
-   `src/lib/data.ts` to fetch from here.
-3. Waterfall computation engine from share-class terms (distributions are
+1. Real staff SSO + LP portal auth (replace the header scheme — the portal
+   contact header is the same dev stand-in as the staff one).
+2. Waterfall computation engine from share-class terms (distributions are
    seeded reads today; invariants already enforced in tests).
-4. Wires lifecycle + retry/resolve through `IWireGateway`; recon ingest +
-   auto-match via `custodian-feed-sync`.
-5. Dedicated database project (SQL Server/PostgreSQL + migrations) replacing
-   the in-memory SQLite dev store.
+3. Wires lifecycle beyond retry (resolve/manual settlement) through
+   `IWireGateway`; recon ingest + auto-match via `custodian-feed-sync`.
+4. Admin CRUD mutations (invite user, edit role, rules, funds/LPs/borrowers) —
+   reads are done; the UI dialogs currently only toast.
+5. Signed document downloads through `IDocumentStorage`, gated by the
+   investor-access document-type configuration.

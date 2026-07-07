@@ -1,4 +1,5 @@
 using Meridian.Infrastructure.Seeding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -8,10 +9,22 @@ public class DatabaseInitializer(AppDbContext db, IConfiguration configuration, 
 {
     public void Initialize()
     {
+        if (db.Database.IsSqlServer())
+        {
+            // Azure SQL: schema (temporal tables, schemas, indexes) and seed data are
+            // deployed by the database/ dacpac project — never create or seed from here.
+            if (!db.Database.CanConnect())
+                throw new InvalidOperationException(
+                    "Cannot reach the configured SQL Server database. Deploy the database/ dacpac and check ConnectionStrings:Default.");
+            logger.LogInformation("Using SQL Server database (schema managed by the database/ dacpac project).");
+            return;
+        }
+
         if (!db.Database.EnsureCreated())
             return; // Schema already exists — another host seeded this shared database.
 
         StorySeed.Apply(db);
+        MockDataSeed.Apply(db);
 
         if (!bool.TryParse(configuration["Seed:IncludeFakeData"], out var includeFake) || includeFake)
         {

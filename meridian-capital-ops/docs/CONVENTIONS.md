@@ -4,11 +4,11 @@ How every screen in this app is built. Follow these when adding screens.
 
 ## Screen pattern
 
-1. **`src/app/(internal)/<route>/page.tsx`** — server component. Calls the data layer (`src/lib/data.ts`), passes plain data into a screen component. Add `export const metadata = { title: "…" }`. Dynamic routes: `params` is a **Promise** (Next 16) — `const { id } = await params;` and add `generateStaticParams()`.
+1. **`src/app/(internal)/<route>/page.tsx`** — server component. `await`s the data layer (`src/lib/data.ts` — async fetches to the backend; `DATA_SOURCE=mock` serves the JSON mocks), passes plain data into a screen component. Add `export const metadata = { title: "…" }`. Dynamic routes: `params` is a **Promise** (Next 16) — `const { id } = await params;`. Do **not** add `generateStaticParams()` — data comes from the backend at request time (the layouts set `dynamic = "force-dynamic"`).
 2. **`src/screens/<Name>Screen.tsx`** — `"use client"` component owning all interactivity (filters, tabs, modals, sorting). Receives data as props; never imports from `src/mocks/` directly.
 3. Portal screens live in `src/app/portal/<route>/page.tsx` (the portal layout provides its own shell).
 
-Screens never fetch GET data from `/api/*` — the server page already has it. Mutations (approve, create, retry) POST to `/api/...` (mock acknowledges; update local state optimistically and show a toast).
+Screens never fetch GET data from `/api/*` — the server page already has it. Mutations (approve, create, retry) POST to `/api/...` (proxied to the backend, which persists + audits; mock mode only acknowledges); update local state optimistically **only when the response is ok**, and always show a toast (success or error).
 
 ## Components (src/components)
 

@@ -2,15 +2,19 @@ import Link from "next/link";
 import { ToastProvider } from "@/components/ui/Toast";
 import { PortalNav } from "@/components/shell/PortalNav";
 import { Avatar } from "@/components/ui/primitives";
-import { getPortalAccount } from "@/lib/data";
+import { getPortalSession } from "@/lib/data";
 
 /**
  * External Investor Portal shell — a separate authenticated experience.
  * An LP only ever sees their own capital account; in production this lives
  * behind its own auth boundary (see docs/ARCHITECTURE.md).
  */
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const account = getPortalAccount();
+// Data comes from the backend per request (no-store) — never prerender at build.
+export const dynamic = "force-dynamic";
+
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  // portal/session is allowed for every contact role (portal/account 403s for Tax-only).
+  const session = await getPortalSession();
   return (
     <ToastProvider>
       <div className="flex h-dvh flex-col overflow-hidden">
@@ -22,8 +26,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </span>
           </Link>
           <div className="flex items-center gap-2.5 text-xs font-medium text-ink-secondary">
-            <span>{account.investor}</span>
-            <Avatar initials={account.contactInitials} />
+            <span>{session.investor}</span>
+            <Avatar initials={session.contactInitials} />
             <button type="button" className="text-ink-faint hover:text-ink">Log out</button>
           </div>
         </header>

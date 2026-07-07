@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Wire } from "@/lib/types";
 import { money } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { ScreenHeader } from "@/components/shell/ScreenHeader";
 import { Button } from "@/components/ui/Button";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
@@ -38,7 +39,13 @@ export function WiresScreen({ asOf, wires: initial }: { asOf: string; wires: Wir
   const exceptions = wires.filter((w) => w.status === "Exception");
 
   async function retry(w: Wire) {
-    await fetch(`/api/wires/${w.id}/retry`, { method: "POST" }).catch(() => null);
+    const { ok, error } = await postJson(`wires/${w.id}/retry`);
+    if (!ok) {
+      toast.push({ kind: "error", title: `Retry failed · ${w.ref}`, detail: error });
+      return;
+    }
+    // The backend re-queues the wire and clears the exception — mirror that.
+    setWires((prev) => prev.map((x) => (x.id === w.id ? { ...x, status: "Queued" as const, exceptionReason: undefined } : x)));
     toast.push({ kind: "success", title: `Wire retry queued · ${w.ref}` });
   }
 

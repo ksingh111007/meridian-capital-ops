@@ -24,7 +24,9 @@ with three product improvements agreed during review:
 
 - **Next.js 16** (App Router, Turbopack) · **React 19** · **TypeScript (strict)** · **Tailwind CSS v4**
 - No component library — a small bespoke UI kit in `src/components/ui/`
-- **No backend yet.** Every API call is mocked by one JSON file (see below).
+- Data comes from the **.NET backend in `../backend/`** by default
+  (`DATA_SOURCE=api`); set `DATA_SOURCE=mock` to serve the JSON mocks instead
+  (no backend needed — the mock files stay in the repo for testing).
 
 ## Run
 
@@ -34,8 +36,23 @@ npm run dev     # http://localhost:3000  (Portfolio home)
 npm run build   # production build
 ```
 
+Start the backend first (default mode fetches it per request):
+
+```bash
+cd ../backend && ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/Meridian.Api --urls http://localhost:8080
+```
+
+Environment (see `.env.example`; all optional — these are the defaults):
+
+| Var | Default | Meaning |
+| --- | --- | --- |
+| `MERIDIAN_API_URL` | `http://localhost:8080` | Backend base URL |
+| `MERIDIAN_API_USER` | `u-admin` | Staff user id sent as `X-User-Id` on internal endpoints (Administrator — full capability matrix) |
+| `MERIDIAN_PORTAL_CONTACT` | `pc-1` | Portal contact id sent as `X-User-Id` on `/api/portal/*` (Karen Doyle, Redwood Pension) |
+| `DATA_SOURCE` | `api` | `api` = fetch the backend · `mock` = serve `src/mocks/*.json` |
+
 The internal app opens at `/portfolio`. The external LP portal is at `/portal`
-(logged in as Redwood Pension in the mock). Mock "today" is **2026-07-05**.
+(logged in as Redwood Pension). Business "today" is **2026-07-05**.
 
 ## Where things live
 

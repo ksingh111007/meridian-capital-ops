@@ -116,6 +116,11 @@ public class CapitalCallService(
 
     private async Task<ApprovalResultDto> ActAsync(string id, string? comment, bool approve, CancellationToken ct)
     {
+        // SQLite ignores length facets but Azure SQL enforces them — validate here
+        // so an oversized comment is a 400, not a truncation error at SaveChanges.
+        if (comment?.Length > 1000)
+            throw DomainException.Validation("Comment must be 1,000 characters or fewer.");
+
         var user = await currentUser.GetRequiredAsync(ct);
         var call = await db.CapitalCalls.FirstOrDefaultAsync(c => c.Id == id, ct)
             ?? throw DomainException.NotFound($"Capital call '{id}' was not found.");

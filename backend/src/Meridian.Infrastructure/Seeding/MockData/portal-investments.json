@@ -1,0 +1,18 @@
+{
+  "asOf": "2026-06-30",
+  "positions": [
+    { "fund": "Meridian Credit III", "vintage": 2024, "commitment": 40.0, "paidIn": 28.4, "distributions": 10.8, "nav": 24.1, "netIrrPct": 14.1, "tvpi": 1.23 },
+    { "fund": "Meridian Credit II", "vintage": 2021, "commitment": 18.0, "paidIn": 17.3, "distributions": 7.8, "nav": 10.7, "netIrrPct": 11.8, "tvpi": 1.32 }
+  ],
+  "totals": { "commitment": 58.0, "paidIn": 41.2, "distributions": 18.6, "nav": 34.8, "netIrrPct": 13.2, "tvpi": 1.30 },
+  "rollforward": {
+    "period": "Q2 2026",
+    "lines": [
+      { "line": "Beginning NAV (Apr 1)", "fundIII": 21.6, "fundII": 12.4, "total": 34.0, "kind": "start" },
+      { "line": "Contributions", "fundIII": 5.0, "fundII": null, "total": 5.0, "kind": "positive" },
+      { "line": "Distributions", "fundIII": -3.4, "fundII": -2.1, "total": -5.5, "kind": "negative" },
+      { "line": "Change in value", "fundIII": 0.9, "fundII": 0.4, "total": 1.3, "kind": "positive" },
+      { "line": "Ending NAV (Jun 30)", "fundIII": 24.1, "fundII": 10.7, "total": 34.8, "kind": "end" }
+    ]
+  }
+}

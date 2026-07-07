@@ -1,0 +1,11 @@
+{
+  "asOf": "2026-07-05",
+  "investedCapital": 520,
+  "activeDeals": 7,
+  "netIrrPct": 14.2,
+  "blendedMoic": 1.19,
+  "onWatchCount": 2,
+  "onWatchExposure": 58,
+  "valueTrend": [48, 55, 53, 64, 70, 67, 76, 82],
+  "exposureMix": { "performingPct": 84, "watchPct": 9, "nonAccrualPct": 7 }
+}

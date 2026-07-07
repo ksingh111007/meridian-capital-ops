@@ -6,7 +6,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Working on Meridian Capital Ops
 
-A private-credit fund-ops front-end (mock-data-only; backend not built yet).
+A private-credit fund-ops front-end. Data comes from the .NET API in
+`../backend` by default (`src/lib/data.ts` = async fetches; start the backend
+per `../backend/README.md`); `DATA_SOURCE=mock` serves the JSON mocks instead
+(no backend needed — see `.env.example`).
 **Read `docs/STATUS.md` first** for where things stand, then:
 
 - `docs/CONVENTIONS.md` — the screen pattern (server `page.tsx` → `"use client"`
@@ -25,11 +28,15 @@ Hard rules learned in the build (Next.js 16):
   `npm run build` (Turbopack).
 - Amounts everywhere are **USD millions**; format via `src/lib/format.ts`;
   money cells right-aligned tabular (`.num`).
-- Mock "today" is **2026-07-05** (`TODAY` in format.ts) — overdue/due-soon math
-  depends on it. Keep `src/mocks/*.json` cross-screen consistent
-  (see DATA_MODEL.md § Cross-screen consistency).
-- Mutations don't persist: screens update local state optimistically, POST to
-  the mock `/api/*`, and show a toast. Keep that pattern until the backend lands.
-- The mock signed-in staff user is J. Okafor (Counsel) — chosen so the live
-  approve/reject demo on `/capital-calls/call-2041` (stage 4 = Legal) works.
-  If you change `src/mocks/me.json`, keep some stage actionable for demos.
+- Story "today" is **2026-07-05** (`TODAY` in format.ts; the backend pins
+  `BusinessDate` to match) — overdue/due-soon math depends on it. Keep
+  `src/mocks/*.json` cross-screen consistent (DATA_MODEL.md § Cross-screen
+  consistency): the mocks still drive mock mode AND generate the database seed
+  (`../database/tools/generate-seed.mjs`) — regenerate the seed after editing.
+- Mutations POST to `/api/*` (proxied to the backend, persisted + audited
+  server-side; acknowledged-only in mock mode) and screens update local state
+  optimistically + toast. Keep that pattern.
+- The default signed-in staff user is `u-admin` (Administrator — full
+  capability matrix, can act on any approval stage; set `MERIDIAN_API_USER`
+  to demo a specific role, e.g. `u-jokafor` for Legal on
+  `/capital-calls/call-2041`). Mock mode still signs in J. Okafor via me.json.

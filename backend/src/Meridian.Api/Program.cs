@@ -15,12 +15,14 @@ using Microsoft.OData.ModelBuilder;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
+// Before AddInfrastructure: its "system" audit-actor fallback is TryAdd'd.
+builder.Services.AddScoped<IAuditActorProvider, HttpAuditActorProvider>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
     .AddControllers()
-    .AddJsonOptions(options =>
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)
+    // Nullable contract fields (types.ts `number | null` etc.) serialize as explicit
+    // null — omitting them breaks the frontend's `!== null` checks.
     .AddOData(options => options
         .AddRouteComponents("odata", BuildEdmModel())
         .Select().Filter().OrderBy().Count().SetMaxTop(200));
@@ -41,6 +43,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, CapabilityPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, CapabilityAuthorizationHandler>();
 builder.Services.AddScoped<ICurrentUserProvider, HttpCurrentUserProvider>();
+builder.Services.AddScoped<IPortalSessionProvider, HttpPortalSessionProvider>();
 
 var app = builder.Build();
 
