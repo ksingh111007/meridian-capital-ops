@@ -1,15 +1,6 @@
-// Azure SQL Database for Meridian Capital Ops.
-//
-//   az group create -n rg-meridian-dev -l eastus2
-//   az deployment group create -g rg-meridian-dev -f azure-sql.bicep \
-//     -p baseName=meridian sqlAdminLogin=<aad-group-or-user> sqlAdminObjectId=<objectId>
-//
-// Then deploy the schema + seed with sqlpackage (see infra/github/deploy-database.yml
-// for the CI version):
-//   dotnet build ../Meridian.Database.sqlproj -c Release
-//   sqlpackage /Action:Publish /SourceFile:../bin/Release/Meridian.Database.dacpac \
-//     /Profile:../profiles/Azure.publish.xml \
-//     /TargetConnectionString:"Server=tcp:<sqlServerFqdn>,1433;Database=meridian;Authentication=Active Directory Default;Encrypt=True;"
+// Azure SQL server + the "meridian" database. Schema + seed are deployed
+// separately by the ../../database dacpac project (sqlpackage — see
+// ../scripts/deploy-database.sh).
 //
 // Hardened defaults: Entra-only authentication (no SQL logins), TLS 1.2+,
 // public network access restricted to Azure services (tighten with private
@@ -18,8 +9,8 @@
 @description('Base name applied to all resources, e.g. "meridian".')
 param baseName string
 
-@allowed(['dev', 'staging', 'prod'])
-param environmentName string = 'dev'
+@allowed(['dev', 'prod'])
+param environmentName string
 
 param location string = resourceGroup().location
 
@@ -78,10 +69,11 @@ resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
     collation: 'SQL_Latin1_General_CP1_CI_AS'
     // Serverless auto-pause after an hour of inactivity (dev cost control).
     autoPauseDelay: startsWith(databaseSkuName, 'GP_S') ? 60 : -1
-    requestedBackupStorageRedundancy: 'Local'
+    requestedBackupStorageRedundancy: environmentName == 'prod' ? 'Geo' : 'Local'
   }
 }
 
+output sqlServerName string = sqlServer.name
 output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
 output databaseName string = database.name
 @description('Set this as ConnectionStrings__Default on the API, with Database__Provider=SqlServer.')

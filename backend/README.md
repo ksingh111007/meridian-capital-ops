@@ -20,7 +20,6 @@ backend/
 │   ├── Meridian.Domain.Tests/            # unit tests for the business rules
 │   └── Meridian.Api.IntegrationTests/    # the emphasis: full-pipeline tests via WebApplicationFactory
 ├── http/                         # .http request files (VS Code REST Client / VS / Rider)
-├── infra/                        # Bicep for Azure App Service + example GitHub Actions workflow
 ├── Dockerfile · docker-compose.yml
 └── MeridianCapital.sln
 ```
@@ -202,17 +201,10 @@ endpoint and observed via the API. Domain unit tests pin the pure rules
 ## Deployment
 
 - **Docker**: multi-stage `Dockerfile`, non-root runtime user, port 8080.
-- **Azure**: `infra/main.bicep` provisions ACR + Linux App Service (Web App for
-  Containers) + Log Analytics + App Insights, with managed-identity ACR pulls,
-  HTTPS-only/TLS 1.2/FTPS-disabled and the `/healthz` probe. See the header of
-  `infra/main.bicep` for the two-command deploy.
-- **CI/CD**: `infra/github/deploy-backend.yml` is a ready GitHub Actions
-  workflow (build → test → `az acr build` → point the web app at the new tag);
-  move it to `.github/workflows/` to activate it.
-- **Database**: provision Azure SQL and deploy the schema + seed with the
-  [`../database`](../database) dacpac project, then set `Database__Provider=SqlServer`
-  and `ConnectionStrings__Default` on the web app (plus `BusinessDate=2026-07-05`
-  for demo parity with the seeded story).
+- **Azure**: the whole stack (this API + the frontend + Azure SQL, dev and
+  prod environments) is provisioned and deployed by the top-level
+  [`../infra`](../infra) folder — Bicep templates, per-environment deploy
+  scripts, and GitHub Actions workflows. Start at `../infra/README.md`.
 
 ## Roadmap (per docs/BACKEND_TODO.md build order)
 

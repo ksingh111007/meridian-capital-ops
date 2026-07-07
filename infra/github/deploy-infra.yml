@@ -1,0 +1,52 @@
+# Provision/update an environment's Azure resources from infra/main.bicep.
+# Manual-only: infra changes are deliberate. Pick dev or prod at dispatch;
+# GitHub environment protection rules can require approval for prod.
+#
+# NOTE: GitHub only executes workflows under .github/workflows/. This file
+# lives in infra/github/ so the repository owner can review it and move it to
+# .github/workflows/deploy-infra.yml when ready (pushes from automation can't
+# always create workflow files directly).
+#
+# Per-environment secrets (GitHub environments "dev" and "prod"):
+#   AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID  (OIDC federated credential)
+# Per-environment variables:
+#   AZURE_RESOURCE_GROUP  (e.g. rg-meridian-dev)
+#   AZURE_LOCATION        (e.g. eastus2)
+
+name: infra
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, prod]
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy Bicep
+        run: |
+          az group create \
+            --name ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --location ${{ vars.AZURE_LOCATION }} \
+            --output none
+          az deployment group create \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name meridian-${{ inputs.environment }} \
+            --template-file infra/main.bicep \
+            --parameters @infra/env/${{ inputs.environment }}.parameters.json
