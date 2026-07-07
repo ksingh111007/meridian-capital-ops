@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/TestResults/
+tests/
+http/
+infra/
+*.md
+.git

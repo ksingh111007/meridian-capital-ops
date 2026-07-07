@@ -1,0 +1,24 @@
+# OData entity set — server-side query composition over the deal book.
+
+@host = http://localhost:8080
+@user = u-jokafor
+
+### First page
+GET {{host}}/odata/Deals?$top=5
+X-User-Id: {{user}}
+
+### Filter by fund with total count
+GET {{host}}/odata/Deals?$filter=fundId eq 'fund-iii'&$count=true
+X-User-Id: {{user}}
+
+### Watch-list deals, largest exposure first
+GET {{host}}/odata/Deals?$filter=status eq 'Watch'&$orderby=outstanding desc
+X-User-Id: {{user}}
+
+### Projection
+GET {{host}}/odata/Deals?$select=id,name,borrower,netIrrPct&$orderby=netIrrPct desc&$top=5
+X-User-Id: {{user}}
+
+### Metadata document
+GET {{host}}/odata/$metadata
+X-User-Id: {{user}}

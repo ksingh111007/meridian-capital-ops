@@ -1,0 +1,70 @@
+# CI/CD for the backend: build → test → containerize → deploy to Azure App Service.
+#
+# NOTE: GitHub only executes workflows under .github/workflows/. This file lives in
+# backend/infra/github/ so the repository owner can review it and move it to
+# .github/workflows/deploy-backend.yml when ready (pushes from automation can't
+# always create workflow files directly).
+#
+# Required repository secrets:
+#   AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID  (OIDC federated credential)
+# Required repository variables:
+#   AZURE_RESOURCE_GROUP  (e.g. rg-meridian-dev)
+#   ACR_NAME              (from the Bicep output acrLoginServer, name part only)
+#   WEBAPP_NAME           (from the Bicep output webAppName)
+
+name: backend
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**']
+  pull_request:
+    paths: ['backend/**']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore MeridianCapital.sln
+      - run: dotnet build MeridianCapital.sln --no-restore -c Release
+      - run: dotnet test MeridianCapital.sln --no-build -c Release --logger "trx"
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-test
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Build and push image (ACR build)
+        run: |
+          az acr build \
+            --registry ${{ vars.ACR_NAME }} \
+            --image meridian-api:${{ github.sha }} \
+            --image meridian-api:latest \
+            backend/
+      - name: Point the web app at the new image
+        run: |
+          az webapp config container set \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name ${{ vars.WEBAPP_NAME }} \
+            --container-image-name ${{ vars.ACR_NAME }}.azurecr.io/meridian-api:${{ github.sha }}
+          az webapp restart \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name ${{ vars.WEBAPP_NAME }}
