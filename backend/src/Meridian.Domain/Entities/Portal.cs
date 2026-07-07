@@ -150,6 +150,10 @@ public class PortalIrRequest
     public long Id { get; set; }
     public string InvestorId { get; set; } = "";
     public string Subject { get; set; } = "";
+    /// <summary>The form's "regarding" category (null on seeded/legacy tickets).</summary>
+    public string? Regarding { get; set; }
+    /// <summary>The LP's message body (null on seeded/legacy tickets).</summary>
+    public string? Message { get; set; }
     public string Ref { get; set; } = "";
     public DateOnly Date { get; set; }
     public string Status { get; set; } = "Open";

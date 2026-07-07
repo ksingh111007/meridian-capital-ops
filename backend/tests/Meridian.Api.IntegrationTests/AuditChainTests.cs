@@ -48,6 +48,6 @@ public class AuditChainTests(MeridianApiFactory factory) : IClassFixture<Meridia
         var log = await factory.CreateClientFor(Users.Compliance).GetJsonAsync("/api/admin/audit");
         var kpis = log["kpis"]!;
         Assert.True((int?)kpis["exceptions"] >= 1); // seeded W-8847 SWIFT exception
-        Assert.True((int?)kpis["approvals"] >= 2);
+        Assert.True((int?)kpis["approvals"] >= 1); // the mock story seeds one CIO approval
     }
 }

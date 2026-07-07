@@ -121,6 +121,17 @@ public class ReadModelTests(MeridianApiFactory factory) : IClassFixture<Meridian
     }
 
     [Fact]
+    public async Task Me_CarriesTheCallersCapabilityMatrix()
+    {
+        // Screens derive affordances (canApprove) from here — never from the
+        // Admin-gated user directory.
+        var me = await factory.CreateClientFor(Users.Counsel).GetJsonAsync("/api/me");
+        Assert.Equal("approve", (string?)me["capabilities"]!["Approvals"]);
+        Assert.Equal("none", (string?)me["capabilities"]!["Admin"]);
+        Assert.Equal("view", (string?)me["capabilities"]!["Ref Data"]);
+    }
+
+    [Fact]
     public async Task Rbac_DeniesReadsOutsideTheCallersMatrix()
     {
         // Counsel: Wires none, Recon none, Admin none.

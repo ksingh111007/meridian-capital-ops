@@ -12,6 +12,10 @@ namespace Meridian.Api.Controllers;
 [Route("api/portal")]
 public class PortalController(PortalService service) : ControllerBase
 {
+    [HttpGet("session")]
+    public async Task<ActionResult<PortalSessionDto>> Session(CancellationToken ct) =>
+        Ok(await service.GetSessionAsync(ct));
+
     [HttpGet("account")]
     public async Task<ActionResult<PortalAccountDto>> Account(CancellationToken ct) =>
         Ok(await service.GetAccountAsync(ct));

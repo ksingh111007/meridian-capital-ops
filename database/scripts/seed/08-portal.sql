@@ -118,8 +118,8 @@ VALUES
     (N'Legal / side letter', 6);
 
 IF NOT EXISTS (SELECT 1 FROM [portal].[IrRequests])
-INSERT INTO [portal].[IrRequests] ([InvestorId], [Subject], [Ref], [Date], [Status])
+INSERT INTO [portal].[IrRequests] ([InvestorId], [Subject], [Regarding], [Message], [Ref], [Date], [Status])
 VALUES
-    (N'inv-redwood', N'Wire instruction update', N'#REQ-3391', N'2026-06-24', N'Resolved'),
-    (N'inv-redwood', N'Q1 statement question', N'#REQ-3288', N'2026-04-30', N'Resolved');
+    (N'inv-redwood', N'Wire instruction update', NULL, NULL, N'#REQ-3391', N'2026-06-24', N'Resolved'),
+    (N'inv-redwood', N'Q1 statement question', NULL, NULL, N'#REQ-3288', N'2026-04-30', N'Resolved');
 

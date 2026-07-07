@@ -173,9 +173,17 @@ public class AppDbContext : DbContext, IAppDbContext
             e.ToTable("CapitalCalls", DbSchemas.Ops);
             e.HasKey(c => c.Id);
             e.OwnsMany(c => c.Allocations, a => Owned(a, "CallAllocations", DbSchemas.Ops));
-            e.OwnsMany(c => c.StageEvents, a => Owned(a, "CallStageEvents", DbSchemas.Ops));
+            e.OwnsMany(c => c.StageEvents, a =>
+            {
+                Owned(a, "CallStageEvents", DbSchemas.Ops);
+                a.Property(s => s.Comment).HasMaxLength(2000); // free text — approver comments
+            });
             e.OwnsMany(c => c.Documents, a => Owned(a, "CallDocuments", DbSchemas.Ops));
-            e.OwnsMany(c => c.AuditEntries, a => Owned(a, "CallAuditEntries", DbSchemas.Ops));
+            e.OwnsMany(c => c.AuditEntries, a =>
+            {
+                Owned(a, "CallAuditEntries", DbSchemas.Ops);
+                a.Property(x => x.Comment).HasMaxLength(2000); // free text — approver comments
+            });
             e.Property(c => c.PendingEscalations)
                 .HasMaxLength(2000)
                 .HasConversion(StringListConverter, StringListComparer);
@@ -310,6 +318,13 @@ public class AppDbContext : DbContext, IAppDbContext
         {
             e.ToTable("Events", DbSchemas.Audit);
             e.HasKey(a => a.Id);
+            e.Property(a => a.Detail).HasMaxLength(2000); // carries quoted approver comments
+            e.Property(a => a.Seal).HasMaxLength(12);
+            e.Property(a => a.PreviousSeal).HasMaxLength(12);
+            // One successor per seal: concurrent appends / retried commits cannot
+            // silently fork the hash chain (see AuditEvent.PreviousSeal).
+            e.HasIndex(a => a.PreviousSeal).IsUnique()
+                .HasFilter(_isSqlServer ? "[PreviousSeal] IS NOT NULL" : "\"PreviousSeal\" IS NOT NULL");
         });
 
         // ---------- portal: LP identities, capital accounts, documents ----------
@@ -396,6 +411,7 @@ public class AppDbContext : DbContext, IAppDbContext
             e.ToTable("IrRequests", DbSchemas.Portal);
             e.HasKey(r => r.Id);
             e.HasOne<Investor>().WithMany().HasForeignKey(r => r.InvestorId);
+            e.Property(r => r.Message).HasMaxLength(2000); // free text — the LP's message body
         });
 
         AddAuditColumns(modelBuilder);

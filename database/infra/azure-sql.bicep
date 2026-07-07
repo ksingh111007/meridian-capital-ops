@@ -29,6 +29,10 @@ param sqlAdminLogin string
 @description('Object id of the Entra ID admin.')
 param sqlAdminObjectId string
 
+@description('Principal type of the Entra ID admin — must match the object behind sqlAdminObjectId.')
+@allowed(['User', 'Group', 'Application'])
+param sqlAdminPrincipalType string = 'Group'
+
 @description('Database SKU. GP_S_Gen5_1 (serverless) suits dev; scale up for production.')
 param databaseSkuName string = 'GP_S_Gen5_1'
 
@@ -46,7 +50,7 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
       login: sqlAdminLogin
       sid: sqlAdminObjectId
       tenantId: subscription().tenantId
-      principalType: 'Group'
+      principalType: sqlAdminPrincipalType
     }
   }
 }

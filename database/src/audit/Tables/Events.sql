@@ -6,8 +6,9 @@ CREATE TABLE [audit].[Events] (
     [Action] nvarchar(400) NOT NULL,
     [Tone] nvarchar(400) NOT NULL,
     [Subject] nvarchar(400) NOT NULL,
-    [Detail] nvarchar(400) NOT NULL,
-    [Seal] nvarchar(400) NOT NULL,
+    [Detail] nvarchar(2000) NOT NULL,
+    [Seal] nvarchar(12) NOT NULL,
+    [PreviousSeal] nvarchar(12) NULL,
     [CreatedAtUtc] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
     [CreatedBy] nvarchar(100) NOT NULL DEFAULT N'system',
     [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
@@ -19,3 +20,5 @@ CREATE TABLE [audit].[Events] (
     CONSTRAINT [PK_Events] PRIMARY KEY ([Id])
 )
 WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [hist].[audit_Events]));
+GO
+CREATE UNIQUE INDEX [IX_Events_PreviousSeal] ON [audit].[Events] ([PreviousSeal]) WHERE [PreviousSeal] IS NOT NULL;

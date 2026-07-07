@@ -1,0 +1,12 @@
+{
+  "kpis": { "eventsToday": 142, "approvals": 18, "configChanges": 3, "exceptions": 1 },
+  "events": [
+    { "time": "Jul 05 09:41", "actor": "S. Patel", "action": "Approved", "tone": "green", "object": "Call #C-2041 · CIO", "detail": "“Cleared to proceed”", "seal": "#a3f9…" },
+    { "time": "Jul 05 09:31", "actor": "System", "action": "Wire exception", "tone": "red", "object": "W-8847", "detail": "SWIFT reject · MT103", "seal": "#7c2b…" },
+    { "time": "Jul 05 09:14", "actor": "T. Alvarez", "action": "Marked wired", "tone": "blue", "object": "Dist #D-119 · Redwood", "detail": "$2.10M", "seal": "#b81e…" },
+    { "time": "Jul 04 16:20", "actor": "J. Okafor", "action": "Started review", "tone": "blue", "object": "Call #C-2041 · Legal", "detail": "stage 4 of 9", "seal": "#4d90…" },
+    { "time": "Jul 04 11:02", "actor": "Admin", "action": "Role changed", "tone": "amber", "object": "user maria.reyes", "detail": "→ Deal Lead", "seal": "#e11a…" },
+    { "time": "Jul 04 10:15", "actor": "D. Whitfield", "action": "Edited alloc.", "tone": "amber", "object": "Call #C-2039", "detail": "$5.10M → $5.00M", "seal": "#9f37…" },
+    { "time": "Jul 03 15:40", "actor": "S. Patel", "action": "Config saved", "tone": "amber", "object": "Workflow “Capital Calls”", "detail": "9 stages", "seal": "#22c8…" }
+  ]
+}

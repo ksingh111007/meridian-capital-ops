@@ -4,7 +4,7 @@ CREATE TABLE [ops].[CallAuditEntries] (
     [Title] nvarchar(400) NOT NULL,
     [By] nvarchar(400) NOT NULL,
     [At] datetime2 NOT NULL,
-    [Comment] nvarchar(400) NULL,
+    [Comment] nvarchar(2000) NULL,
     [Tone] nvarchar(400) NOT NULL,
     [CapitalCallId] nvarchar(64) NOT NULL,
     [CreatedAtUtc] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),

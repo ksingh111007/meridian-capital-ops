@@ -1,0 +1,141 @@
+{
+  "calls": [
+    {
+      "id": "call-2041", "ref": "#C-2041", "dealId": "deal-atlas", "deal": "Project Atlas", "fundId": "fund-iii", "tranche": "Term A", "borrower": "Vantage Health",
+      "amount": 16.0, "dueDate": "2026-07-08", "currentStage": 4, "status": "In Review",
+      "allocations": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 40.0, "amount": 8.2, "wireStatus": "Pending" },
+        { "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "commitment": 25.0, "amount": 5.1, "wireStatus": "Wired" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 2.7, "wireStatus": "Scheduled" }
+      ],
+      "stageEvents": [
+        { "stage": 1, "state": "done", "actor": "J. Chen", "date": "Jul 01" },
+        { "stage": 2, "state": "done", "actor": "M. Reyes", "date": "Jul 02" },
+        { "stage": 3, "state": "done", "actor": "S. Patel", "date": "Jul 02", "comment": "Cleared to proceed" },
+        { "stage": 4, "state": "current", "actor": "J. Okafor", "date": "Jul 04", "note": "In review" }
+      ],
+      "documents": [
+        { "name": "Capital Call Notice.pdf", "by": "J. Chen", "date": "Jul 01" },
+        { "name": "Wire Instructions.pdf", "by": "Operations", "date": "Jul 01" },
+        { "name": "LPA Excerpt — §4.2.pdf", "by": "Legal", "date": "Jul 04" }
+      ],
+      "audit": [
+        { "title": "Legal review started", "by": "J. Okafor", "at": "Jul 04 10:12", "tone": "blue" },
+        { "title": "CIO approved", "by": "S. Patel", "at": "Jul 02 16:40", "comment": "Cleared to proceed", "tone": "green" },
+        { "title": "Front Office approved", "by": "M. Reyes", "at": "Jul 02 09:15", "tone": "green" },
+        { "title": "Submitted for review", "by": "J. Chen", "at": "Jul 01 14:02", "tone": "green" },
+        { "title": "Call created", "by": "System", "at": "Jul 01 08:00", "tone": "neutral" }
+      ]
+    },
+    {
+      "id": "call-2042", "ref": "#C-2042", "dealId": "deal-beacon", "deal": "Project Beacon", "fundId": "fund-iii", "tranche": "Unitranche", "borrower": "Nordic Logistics",
+      "amount": 26.3, "dueDate": "2026-07-09", "currentStage": 5, "status": "Pending",
+      "allocations": [
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 14.4, "wireStatus": "Scheduled" },
+        { "investorId": "inv-summit", "investor": "Summit Investments", "commitment": 50.0, "amount": 11.9, "wireStatus": "Scheduled" }
+      ],
+      "stageEvents": [
+        { "stage": 1, "state": "done", "actor": "J. Chen", "date": "Jun 30" },
+        { "stage": 2, "state": "done", "actor": "M. Reyes", "date": "Jul 01" },
+        { "stage": 3, "state": "done", "actor": "S. Patel", "date": "Jul 02" },
+        { "stage": 4, "state": "done", "actor": "J. Okafor", "date": "Jul 03" },
+        { "stage": 5, "state": "current", "actor": "T. Alvarez", "date": "Jul 04", "note": "Awaiting review" }
+      ],
+      "documents": [
+        { "name": "Capital Call Notice.pdf", "by": "J. Chen", "date": "Jun 30" },
+        { "name": "Wire Instructions.pdf", "by": "Operations", "date": "Jun 30" }
+      ],
+      "audit": [
+        { "title": "Legal approved", "by": "J. Okafor", "at": "Jul 03 15:20", "tone": "green" },
+        { "title": "CIO approved", "by": "S. Patel", "at": "Jul 02 11:05", "tone": "green" },
+        { "title": "Front Office approved", "by": "M. Reyes", "at": "Jul 01 10:30", "tone": "green" },
+        { "title": "Submitted for review", "by": "J. Chen", "at": "Jun 30 09:12", "tone": "green" },
+        { "title": "Call created", "by": "System", "at": "Jun 30 08:00", "tone": "neutral" }
+      ]
+    },
+    {
+      "id": "call-2036", "ref": "#C-2036", "dealId": "deal-cedar", "deal": "Project Cedar", "fundId": "fund-ii", "tranche": "Term B", "borrower": "Apex Manufacturing",
+      "amount": 6.75, "dueDate": "2026-07-11", "currentStage": 9, "status": "Completed",
+      "allocations": [
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 30.0, "amount": 6.75, "wireStatus": "Confirmed" }
+      ],
+      "stageEvents": [
+        { "stage": 1, "state": "done", "actor": "J. Chen", "date": "Jun 24" },
+        { "stage": 2, "state": "done", "actor": "M. Reyes", "date": "Jun 25" },
+        { "stage": 3, "state": "done", "actor": "S. Patel", "date": "Jun 25" },
+        { "stage": 4, "state": "done", "actor": "J. Okafor", "date": "Jun 26" },
+        { "stage": 5, "state": "done", "actor": "T. Alvarez", "date": "Jun 27" },
+        { "stage": 6, "state": "done", "actor": "D. Whitfield", "date": "Jun 28" },
+        { "stage": 7, "state": "done", "actor": "System", "date": "Jun 28" },
+        { "stage": 8, "state": "done", "actor": "System", "date": "Jun 28" },
+        { "stage": 9, "state": "done", "actor": "System", "date": "Jun 29" }
+      ],
+      "documents": [ { "name": "Capital Call Notice.pdf", "by": "J. Chen", "date": "Jun 24" } ],
+      "audit": [
+        { "title": "Call completed", "by": "System", "at": "Jun 29 08:00", "tone": "green" },
+        { "title": "Custodians notified", "by": "System", "at": "Jun 28 17:20", "tone": "green" },
+        { "title": "Booked to GL", "by": "System", "at": "Jun 28 16:05", "tone": "green" },
+        { "title": "Call created", "by": "System", "at": "Jun 24 08:00", "tone": "neutral" }
+      ]
+    },
+    {
+      "id": "call-2039", "ref": "#C-2039", "dealId": "deal-delta", "deal": "Project Delta", "fundId": "fund-ii", "tranche": "Term A", "borrower": "Helio Software",
+      "amount": 18.4, "dueDate": "2026-07-01", "currentStage": 3, "status": "Returned",
+      "allocations": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 18.0, "amount": 6.2, "wireStatus": "Wired" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 30.0, "amount": 5.1, "wireStatus": "Wired" },
+        { "investorId": "inv-granite", "investor": "Granite State Insurance", "commitment": 35.0, "amount": 4.3, "wireStatus": "Overdue" },
+        { "investorId": "inv-oakmont", "investor": "Oakmont Trust", "commitment": 20.0, "amount": 2.8, "wireStatus": "Overdue" }
+      ],
+      "stageEvents": [
+        { "stage": 1, "state": "done", "actor": "J. Chen", "date": "Jun 20" },
+        { "stage": 2, "state": "done", "actor": "M. Reyes", "date": "Jun 22" },
+        { "stage": 3, "state": "current", "actor": "S. Patel", "date": "Jul 04", "note": "Returned for re-review" }
+      ],
+      "documents": [
+        { "name": "Capital Call Notice.pdf", "by": "J. Chen", "date": "Jun 20" },
+        { "name": "Allocation Memo (rev 2).pdf", "by": "D. Whitfield", "date": "Jul 04" }
+      ],
+      "audit": [
+        { "title": "Returned to CIO", "by": "J. Okafor", "at": "Jul 04 14:22", "comment": "Allocation revision needs CIO re-approval", "tone": "amber" },
+        { "title": "Allocation edited", "by": "D. Whitfield", "at": "Jul 04 10:15", "comment": "$5.10M → $5.00M correction reversed", "tone": "amber" },
+        { "title": "CIO approved", "by": "S. Patel", "at": "Jun 23 12:00", "tone": "green" },
+        { "title": "Call created", "by": "System", "at": "Jun 20 08:00", "tone": "neutral" }
+      ]
+    },
+    {
+      "id": "call-2043", "ref": "#C-2043", "dealId": "deal-echo", "deal": "Project Echo", "fundId": "fund-iii", "tranche": "Term A", "borrower": "Coastal Foods",
+      "amount": 120.0, "dueDate": "2026-08-04", "currentStage": 1, "status": "In Review",
+      "allocations": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 40.0, "amount": 21.8, "wireStatus": "Pending" },
+        { "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "commitment": 25.0, "amount": 13.6, "wireStatus": "Pending" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 32.7, "wireStatus": "Pending" },
+        { "investorId": "inv-summit", "investor": "Summit Investments", "commitment": 50.0, "amount": 27.3, "wireStatus": "Pending" },
+        { "investorId": "inv-ironwood", "investor": "Ironwood Capital", "commitment": 45.0, "amount": 24.6, "wireStatus": "Pending" }
+      ],
+      "stageEvents": [ { "stage": 1, "state": "current", "actor": "J. Chen", "date": "Jul 04", "note": "In review · escalation: >$20M requires CIO + Compliance" } ],
+      "documents": [ { "name": "Capital Call Notice (draft).pdf", "by": "J. Chen", "date": "Jul 04" } ],
+      "audit": [ { "title": "Call created", "by": "J. Chen", "at": "Jul 04 09:30", "tone": "neutral" } ]
+    },
+    {
+      "id": "call-2044", "ref": "#C-2044", "dealId": "deal-gale", "deal": "Project Gale", "fundId": "fund-iii", "tranche": "Mezzanine", "borrower": "Harborview REIT",
+      "amount": 60.55, "dueDate": "2026-07-29", "currentStage": 2, "status": "In Review",
+      "allocations": [
+        { "investorId": "inv-redwood", "investor": "Redwood Pension", "commitment": 40.0, "amount": 11.0, "wireStatus": "Pending" },
+        { "investorId": "inv-blueharbor", "investor": "Blue Harbor Endowment", "commitment": 25.0, "amount": 6.9, "wireStatus": "Pending" },
+        { "investorId": "inv-cascade", "investor": "Cascade Family Office", "commitment": 60.0, "amount": 16.5, "wireStatus": "Pending" },
+        { "investorId": "inv-summit", "investor": "Summit Investments", "commitment": 50.0, "amount": 13.8, "wireStatus": "Pending" },
+        { "investorId": "inv-ironwood", "investor": "Ironwood Capital", "commitment": 45.0, "amount": 12.35, "wireStatus": "Pending" }
+      ],
+      "stageEvents": [
+        { "stage": 1, "state": "done", "actor": "J. Chen", "date": "Jul 02" },
+        { "stage": 2, "state": "current", "actor": "M. Reyes", "date": "Jul 03", "note": "In review · escalation: >$20M requires CIO + Compliance" }
+      ],
+      "documents": [ { "name": "Capital Call Notice.pdf", "by": "J. Chen", "date": "Jul 02" } ],
+      "audit": [
+        { "title": "Operations approved", "by": "J. Chen", "at": "Jul 02 15:45", "tone": "green" },
+        { "title": "Call created", "by": "System", "at": "Jul 02 08:00", "tone": "neutral" }
+      ]
+    }
+  ]
+}

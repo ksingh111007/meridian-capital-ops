@@ -93,6 +93,17 @@ public class PortalTests(MeridianApiFactory factory) : IClassFixture<MeridianApi
     }
 
     [Fact]
+    public async Task Session_IsAvailableToEveryPortalContact()
+    {
+        // The shell renders from the session — even for contacts who cannot
+        // read the capital account (Tax-only).
+        var session = await factory.CreateClientFor(TaxOnlyContact).GetJsonAsync("/api/portal/session");
+        Assert.Equal("inv-granite", (string?)session["investorId"]);
+        Assert.Equal("Granite State Insurance", (string?)session["investor"]);
+        Assert.Equal("Tax-only", (string?)session["role"]);
+    }
+
+    [Fact]
     public async Task TaxOnlyContacts_AreLimitedToTaxAndIr()
     {
         var client = factory.CreateClientFor(TaxOnlyContact);

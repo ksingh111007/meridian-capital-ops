@@ -1,23 +1,28 @@
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+using Meridian.Application.Common;
+using Meridian.Domain;
 using Meridian.Domain.Entities;
+using Meridian.Domain.Services;
 using Meridian.Infrastructure.Persistence;
 
 namespace Meridian.Infrastructure.Seeding;
 
 /// <summary>
-/// Seeds the read models added for the frontend swap from embedded copies of the
-/// frontend mock story (Seeding/MockData/*.json — same files as
-/// meridian-capital-ops/src/mocks). The Azure SQL post-deployment seed is
-/// generated from the same JSONs by database/tools/generate-seed.mjs, so both
-/// stores serve the same story. Runs after <see cref="StorySeed"/>, before
-/// SaveChanges.
+/// Seeds the story data from embedded copies of the frontend mocks
+/// (Seeding/MockData/*.json — same files as meridian-capital-ops/src/mocks).
+/// The Azure SQL post-deployment seed is generated from the same JSONs by
+/// database/tools/generate-seed.mjs, so both stores serve the same story —
+/// entities <see cref="StorySeed"/> pre-created (funds, deals, investors,
+/// staff) are overlaid with the mock values here. Runs after StorySeed,
+/// before SaveChanges.
 /// </summary>
 public static class MockDataSeed
 {
     public static void Apply(AppDbContext db)
     {
+        SeedFundOverlay(db);
         SeedDealsAndDetails(db);
         SeedFundStructure(db);
         SeedInvestorExtras(db);
@@ -25,6 +30,8 @@ public static class MockDataSeed
         SeedReferenceData(db);
         SeedIntegrations(db);
         SeedNotificationRules(db);
+        SeedCapitalCalls(db);
+        SeedDistributions(db);
         SeedDrawdowns(db);
         SeedWires(db);
         SeedReconciliation(db);
@@ -33,37 +40,59 @@ public static class MockDataSeed
         SeedInvestorAccess(db);
         SeedPortal(db);
         SeedScreenKpis(db);
+        SeedAuditEvents(db);
     }
 
     // ---------- portfolio & deals ----------
 
+    /// <summary>The mock funds carry the published figures — overlay them onto the skeletons.</summary>
+    private static void SeedFundOverlay(AppDbContext db)
+    {
+        foreach (var fund in Load("funds").GetProperty("funds").EnumerateArray())
+        {
+            var existing = db.Funds.Local.FirstOrDefault(f => f.Id == Str(fund, "id"));
+            if (existing is null)
+                continue;
+
+            existing.Name = Str(fund, "name");
+            existing.ShortName = Str(fund, "shortName");
+            existing.Vintage = Int(fund, "vintage");
+            existing.Committed = Dec(fund, "committed");
+            existing.CalledPct = Dec(fund, "calledPct");
+            existing.Strategy = Str(fund, "strategy");
+            existing.WaterfallType = Enum.Parse<WaterfallType>(Str(fund, "waterfallType"));
+            existing.Status = Enum.Parse<FundStatus>(Str(fund, "status"));
+        }
+    }
+
     private static void SeedDealsAndDetails(AppDbContext db)
     {
-        // The mock book has deals the story seed doesn't (echo, foxtrot, gale) —
-        // add them so every deal drill-down resolves.
+        // The mocks are authoritative for the whole book: overlay the deals the
+        // story seed pre-created and add the rest (echo, foxtrot, gale) so every
+        // drill-down resolves and rows always agree with their details.
         foreach (var deal in Load("deals").GetProperty("deals").EnumerateArray())
         {
             var id = Str(deal, "id");
-            if (db.Deals.Local.Any(d => d.Id == id))
-                continue;
-
-            db.Deals.Add(new Deal
+            var target = db.Deals.Local.FirstOrDefault(d => d.Id == id);
+            if (target is null)
             {
-                Id = id,
-                Name = Str(deal, "name"),
-                Borrower = Str(deal, "borrower"),
-                Sector = Str(deal, "sector"),
-                Country = Str(deal, "country"),
-                FundId = Str(deal, "fundId"),
-                Tranche = Str(deal, "tranche"),
-                Invested = Dec(deal, "invested"),
-                Outstanding = Dec(deal, "outstanding"),
-                Spread = Str(deal, "spread"),
-                NetIrrPct = Dec(deal, "netIrrPct"),
-                IrrTrend = Str(deal, "irrTrend"),
-                Moic = Dec(deal, "moic"),
-                Status = Str(deal, "status"),
-            });
+                target = new Deal { Id = id };
+                db.Deals.Add(target);
+            }
+
+            target.Name = Str(deal, "name");
+            target.Borrower = Str(deal, "borrower");
+            target.Sector = Str(deal, "sector");
+            target.Country = Str(deal, "country");
+            target.FundId = Str(deal, "fundId");
+            target.Tranche = Str(deal, "tranche");
+            target.Invested = Dec(deal, "invested");
+            target.Outstanding = Dec(deal, "outstanding");
+            target.Spread = Str(deal, "spread");
+            target.NetIrrPct = Dec(deal, "netIrrPct");
+            target.IrrTrend = Str(deal, "irrTrend");
+            target.Moic = Dec(deal, "moic");
+            target.Status = Str(deal, "status");
         }
 
         foreach (var property in Load("deal-details").EnumerateObject())
@@ -156,6 +185,16 @@ public static class MockDataSeed
     {
         foreach (var investor in Load("investors").GetProperty("investors").EnumerateArray())
         {
+            // Overlay the registry display fields (type wording, KYC state) — the
+            // commitments themselves already match the story skeleton.
+            var existing = db.Investors.Local.FirstOrDefault(i => i.Id == Str(investor, "id"));
+            if (existing is not null)
+            {
+                existing.Type = Str(investor, "type");
+                existing.KycStatus = Str(investor, "kycStatus");
+                existing.WireInstructionsOnFile = investor.GetProperty("wireInstructionsOnFile").GetBoolean();
+            }
+
             if (!investor.TryGetProperty("profile", out var profile))
                 continue;
 
@@ -172,7 +211,7 @@ public static class MockDataSeed
         }
     }
 
-    /// <summary>Overlays mock last-active/fund-access display values onto the story-seeded staff.</summary>
+    /// <summary>Overlays the mock roster's display values onto the story-seeded staff.</summary>
     private static void SeedStaffPresence(AppDbContext db)
     {
         foreach (var user in Load("users").GetProperty("users").EnumerateArray())
@@ -182,6 +221,9 @@ public static class MockDataSeed
             if (staff is null)
                 continue;
 
+            staff.Name = Str(user, "name");
+            staff.Initials = Str(user, "initials");
+            staff.Email = Str(user, "email");
             staff.LastActive = Str(user, "lastActive");
             staff.FundAccess = Str(user, "fundAccess");
         }
@@ -264,6 +306,132 @@ public static class MockDataSeed
                 Detail = Str(channel, "detail"),
                 Connected = channel.GetProperty("connected").GetBoolean(),
             });
+        }
+    }
+
+    // ---------- capital calls & distributions ----------
+
+    private static void SeedCapitalCalls(AppDbContext db)
+    {
+        foreach (var call in Load("capital-calls").GetProperty("calls").EnumerateArray())
+        {
+            db.CapitalCalls.Add(new CapitalCall
+            {
+                Id = Str(call, "id"),
+                Ref = Str(call, "ref"),
+                DealId = Str(call, "dealId"),
+                DealName = Str(call, "deal"),
+                FundId = Str(call, "fundId"),
+                Tranche = Str(call, "tranche"),
+                Borrower = Str(call, "borrower"),
+                Amount = Dec(call, "amount"),
+                DueDate = Date(call, "dueDate"),
+                CurrentStage = Int(call, "currentStage"),
+                Status = Display.ParseCallStatus(Str(call, "status")),
+                Allocations = call.GetProperty("allocations").EnumerateArray().Select(a => new CallAllocation
+                {
+                    InvestorId = Str(a, "investorId"),
+                    InvestorName = Str(a, "investor"),
+                    Commitment = Dec(a, "commitment"),
+                    Amount = Dec(a, "amount"),
+                    WireStatus = Enum.Parse<WireStatus>(Str(a, "wireStatus")),
+                }).ToList(),
+                StageEvents = call.GetProperty("stageEvents").EnumerateArray().Select(s => new StageEvent
+                {
+                    Stage = s.GetProperty("stage").GetInt32(),
+                    State = Enum.Parse<StageState>(Str(s, "state"), ignoreCase: true),
+                    Actor = OptStr(s, "actor"),
+                    Date = OptStr(s, "date") is { } date ? ShortDate(date) : null,
+                    Note = OptStr(s, "note"),
+                    Comment = OptStr(s, "comment"),
+                }).ToList(),
+                Documents = call.GetProperty("documents").EnumerateArray().Select(d => new CallDocument
+                {
+                    Name = Str(d, "name"),
+                    By = Str(d, "by"),
+                    Date = ShortDate(Str(d, "date")),
+                }).ToList(),
+                AuditEntries = call.GetProperty("audit").EnumerateArray().Select(a => new CallAuditEntry
+                {
+                    Title = Str(a, "title"),
+                    By = Str(a, "by"),
+                    At = ShortDateTime(Str(a, "at")),
+                    Comment = OptStr(a, "comment"),
+                    Tone = Str(a, "tone"),
+                }).ToList(),
+            });
+        }
+    }
+
+    private static void SeedDistributions(AppDbContext db)
+    {
+        foreach (var distribution in Load("distributions").GetProperty("distributions").EnumerateArray())
+        {
+            db.Distributions.Add(new Distribution
+            {
+                Id = Str(distribution, "id"),
+                Ref = Str(distribution, "ref"),
+                FundId = Str(distribution, "fundId"),
+                Distributable = Dec(distribution, "distributable"),
+                LpTotal = Dec(distribution, "lpTotal"),
+                GpTotal = Dec(distribution, "gpTotal"),
+                PaymentDate = Date(distribution, "paymentDate"),
+                Status = Enum.Parse<DistributionStatus>(Str(distribution, "status")),
+                WaterfallType = Enum.Parse<WaterfallType>(Str(distribution, "waterfallType")),
+                SourceNote = Str(distribution, "sourceNote"),
+                Tiers = distribution.GetProperty("tiers").EnumerateArray().Select(t => new WaterfallTier
+                {
+                    Tier = Str(t, "tier"),
+                    Basis = Str(t, "basis"),
+                    Rate = Str(t, "rate"),
+                    Distributed = Dec(t, "distributed"),
+                    LpShare = OptDec(t, "lpShare"),
+                    GpShare = OptDec(t, "gpShare"),
+                    PoolLeft = Dec(t, "poolLeft"),
+                }).ToList(),
+                Payouts = distribution.GetProperty("payouts").EnumerateArray().Select(p => new InvestorPayout
+                {
+                    InvestorId = Str(p, "investorId"),
+                    InvestorName = Str(p, "investor"),
+                    Commitment = Dec(p, "commitment"),
+                    Amount = Dec(p, "amount"),
+                    PctOfLpTotal = Dec(p, "pctOfLpTotal"),
+                    Status = Enum.Parse<PayoutStatus>(Str(p, "status")),
+                    BlockedReason = OptStr(p, "blockedReason"),
+                    WireRef = OptStr(p, "wireRef"),
+                }).ToList(),
+            });
+        }
+    }
+
+    // ---------- audit log (hash-chained, oldest first) ----------
+
+    private static void SeedAuditEvents(AppDbContext db)
+    {
+        // The mock lists newest first; the chain appends oldest first, with each
+        // seal computed by the real sealer so chainValid holds on seeded data.
+        var events = Load("audit-log").GetProperty("events").EnumerateArray().Reverse();
+        string? previousSeal = null;
+        foreach (var e in events)
+        {
+            var at = ShortDateTime(Str(e, "time"));
+            var actor = Str(e, "actor");
+            var action = Str(e, "action");
+            var subject = Str(e, "object");
+            var detail = Str(e, "detail");
+            var seal = AuditSealer.ComputeSeal(previousSeal, at, actor, action, subject, detail);
+            db.AuditEvents.Add(new AuditEvent
+            {
+                At = at,
+                Actor = actor,
+                Action = action,
+                Tone = Str(e, "tone"),
+                Subject = subject,
+                Detail = detail,
+                Seal = seal,
+                PreviousSeal = previousSeal,
+            });
+            previousSeal = seal;
         }
     }
 
@@ -580,18 +748,20 @@ public static class MockDataSeed
         AddKpis(db, "drawdowns", Load("drawdowns").GetProperty("kpis"));
         AddKpis(db, "investor-access", Load("investor-access").GetProperty("kpis"));
 
-        var wires = Load("wires");
-        AddKpis(db, "wires", wires.GetProperty("kpis"));
-        AddKpi(db, "wires", "asOf", wires.GetProperty("asOf"));
+        // Wires/reconciliation KPI counts are computed from the rows at read time
+        // (so mutations can't leave a stale strip) — only publish the metadata.
+        AddKpi(db, "wires", "asOf", Load("wires").GetProperty("asOf"));
 
         var recon = Load("reconciliation");
-        AddKpis(db, "reconciliation", recon.GetProperty("kpis"));
         AddKpi(db, "reconciliation", "asOf", recon.GetProperty("asOf"));
         AddKpi(db, "reconciliation", "source", recon.GetProperty("source"));
 
         AddKpi(db, "reference-data", "currenciesUpdated", Load("reference-data").GetProperty("currenciesUpdated"));
 
-        AddKpi(db, "portal-statements", "totalCount", Load("portal-statements").GetProperty("totalCount"));
+        // The statement-library size is per investor — key it by the LP.
+        var statementsInvestor = Str(Load("portal-account"), "investorId");
+        AddKpi(db, $"portal-statements/{statementsInvestor}", "totalCount",
+            Load("portal-statements").GetProperty("totalCount"));
         var taxBanner = Load("portal-tax").GetProperty("banner");
         AddKpi(db, "portal-tax", "bannerHeadline", taxBanner.GetProperty("headline"));
         AddKpi(db, "portal-tax", "bannerDetail", taxBanner.GetProperty("detail"));
@@ -653,4 +823,10 @@ public static class MockDataSeed
     /// <summary>Mock display dates like "Jun 24" are in the story year (2026).</summary>
     private static DateOnly ShortDate(string display) =>
         DateOnly.ParseExact($"{display} 2026", "MMM dd yyyy", CultureInfo.InvariantCulture);
+
+    /// <summary>Mock display times like "Jul 05 09:41" are UTC in the story year.</summary>
+    private static DateTime ShortDateTime(string display) =>
+        DateTime.SpecifyKind(
+            DateTime.ParseExact($"{display} 2026", "MMM dd HH:mm yyyy", CultureInfo.InvariantCulture),
+            DateTimeKind.Utc);
 }

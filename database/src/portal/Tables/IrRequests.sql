@@ -3,6 +3,8 @@ CREATE TABLE [portal].[IrRequests] (
     [Id] bigint NOT NULL IDENTITY,
     [InvestorId] nvarchar(64) NOT NULL,
     [Subject] nvarchar(400) NOT NULL,
+    [Regarding] nvarchar(400) NULL,
+    [Message] nvarchar(2000) NULL,
     [Ref] nvarchar(400) NOT NULL,
     [Date] date NOT NULL,
     [Status] nvarchar(400) NOT NULL,

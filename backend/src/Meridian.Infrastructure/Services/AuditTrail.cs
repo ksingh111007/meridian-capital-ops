@@ -34,6 +34,9 @@ public sealed class AuditTrail(AppDbContext db, IClock clock) : IAuditTrail
                 Subject = subject,
                 Detail = detail,
                 Seal = AuditSealer.ComputeSeal(previous?.Seal, at, actor, action, subject, detail),
+                // Unique-indexed: a concurrent instance (or a retried commit) chaining
+                // to the same predecessor fails loudly instead of forking the chain.
+                PreviousSeal = previous?.Seal,
             });
             await db.SaveChangesAsync(cancellationToken);
         }

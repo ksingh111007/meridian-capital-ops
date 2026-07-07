@@ -334,14 +334,13 @@ addKpis("users", users.kpis);
 addKpis("integrations", integrations.kpis);
 addKpis("drawdowns", mock("drawdowns").kpis);
 addKpis("investor-access", mock("investor-access").kpis);
-const wires = mock("wires");
-addKpis("wires", wires.kpis);
-addKpis("wires", { asOf: wires.asOf });
+// Wires/reconciliation KPI counts are computed from the rows at read time — only
+// the published metadata is seeded.
+addKpis("wires", { asOf: mock("wires").asOf });
 const recon = mock("reconciliation");
-addKpis("reconciliation", recon.kpis);
 addKpis("reconciliation", { asOf: recon.asOf, source: recon.source });
 addKpis("reference-data", { currenciesUpdated: reference.currenciesUpdated });
-addKpis("portal-statements", { totalCount: mock("portal-statements").totalCount });
+addKpis(`portal-statements/${mock("portal-account").investorId}`, { totalCount: mock("portal-statements").totalCount });
 const taxBanner = mock("portal-tax").banner;
 addKpis("portal-tax", { bannerHeadline: taxBanner.headline, bannerDetail: taxBanner.detail });
 emit("07-kpis", insertBlock("ops.KpiSnapshots", kpiRows));
@@ -422,7 +421,8 @@ emit("08-portal", insertBlock("portal.IrRegardingOptions", contact.regardingOpti
   Label: label, SortOrder: index + 1,
 }))));
 emit("08-portal", insertBlock("portal.IrRequests", contact.recentRequests.map((r) => ({
-  InvestorId: lpId, Subject: r.subject, Ref: r.ref, Date: shortDate(r.date), Status: r.status,
+  InvestorId: lpId, Subject: r.subject, Regarding: null, Message: null, Ref: r.ref,
+  Date: shortDate(r.date), Status: r.status,
 }))));
 
 // ---------- 09: audit log (hash-chained, oldest first) ----------
@@ -442,8 +442,8 @@ let previousSeal = null;
 let auditSql = "IF NOT EXISTS (SELECT 1 FROM [audit].[Events])\nBEGIN\n";
 for (const event of auditEvents) {
   const seal = computeSeal(previousSeal, event.at, event.actor, event.action, event.object, event.detail);
-  auditSql += `    INSERT INTO [audit].[Events] ([At], [Actor], [Action], [Tone], [Subject], [Detail], [Seal])\n`
-    + `    VALUES (${[event.at, event.actor, event.action, event.tone, event.object, event.detail, seal].map(quote).join(", ")});\n`;
+  auditSql += `    INSERT INTO [audit].[Events] ([At], [Actor], [Action], [Tone], [Subject], [Detail], [Seal], [PreviousSeal])\n`
+    + `    VALUES (${[event.at, event.actor, event.action, event.tone, event.object, event.detail, seal, previousSeal].map(quote).join(", ")});\n`;
   previousSeal = seal;
 }
 auditSql += "END;\n";

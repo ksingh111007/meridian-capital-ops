@@ -6,7 +6,7 @@ CREATE TABLE [ops].[CallStageEvents] (
     [Actor] nvarchar(400) NULL,
     [Date] date NULL,
     [Note] nvarchar(400) NULL,
-    [Comment] nvarchar(400) NULL,
+    [Comment] nvarchar(2000) NULL,
     [CapitalCallId] nvarchar(64) NOT NULL,
     [CreatedAtUtc] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
     [CreatedBy] nvarchar(100) NOT NULL DEFAULT N'system',

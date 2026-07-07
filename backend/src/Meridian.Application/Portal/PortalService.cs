@@ -60,6 +60,10 @@ public sealed record PortalIrInfoDto(
 
 public sealed record CreateIrMessageRequest(string Subject, string Regarding, string Message);
 
+/// <summary>The portal shell's identity strip — available to every portal contact.</summary>
+public sealed record PortalSessionDto(
+    string ContactId, string ContactName, string ContactInitials, string InvestorId, string Investor, string Role);
+
 /// <summary>
 /// Investor-portal reads/mutations, always scoped to the session's LP — investor
 /// ids never come from request parameters. Tax-only contacts see only tax
@@ -67,6 +71,19 @@ public sealed record CreateIrMessageRequest(string Subject, string Regarding, st
 /// </summary>
 public class PortalService(IAppDbContext db, IPortalSessionProvider sessionProvider, IAuditTrail audit, IClock clock)
 {
+    /// <summary>
+    /// Who is signed in — allowed for every portal contact (including Tax-only,
+    /// who cannot read the capital account) so the shell can always render.
+    /// </summary>
+    public async Task<PortalSessionDto> GetSessionAsync(CancellationToken ct = default)
+    {
+        var session = await sessionProvider.GetRequiredAsync(ct);
+        var investor = await GetInvestorAsync(session.InvestorId, ct);
+        return new PortalSessionDto(
+            session.ContactId, session.ContactName, session.ContactInitials,
+            investor.Id, investor.Name, session.Role);
+    }
+
     public async Task<PortalAccountDto> GetAccountAsync(CancellationToken ct = default)
     {
         var session = await RequireCapitalAccountAccessAsync(ct);
@@ -140,7 +157,8 @@ public class PortalService(IAppDbContext db, IPortalSessionProvider sessionProvi
         if (statementsAccess == "tax")
             documents = documents.Where(d => d.Type == "Tax").ToList();
 
-        var kpis = await KpiReader.ForScreenAsync(db, "portal-statements", ct);
+        // The published library size is per investor — never another LP's count.
+        var kpis = await KpiReader.ForScreenAsync(db, $"portal-statements/{session.InvestorId}", ct);
         var totalCount = statementsAccess == "full" && kpis.Count("totalCount") > 0
             ? kpis.Count("totalCount")
             : documents.Count;
@@ -187,20 +205,29 @@ public class PortalService(IAppDbContext db, IPortalSessionProvider sessionProvi
     {
         if (string.IsNullOrWhiteSpace(request.Subject))
             throw DomainException.Validation("A subject is required.");
+        if (request.Subject.Length > 200)
+            throw DomainException.Validation("The subject must be 200 characters or fewer.");
         if (string.IsNullOrWhiteSpace(request.Message))
             throw DomainException.Validation("A message is required.");
+        if (request.Message.Length > 2000)
+            throw DomainException.Validation("The message must be 2,000 characters or fewer.");
 
         var session = await sessionProvider.GetRequiredAsync(ct);
-        var nextNumber = await db.PortalIrRequests.CountAsync(ct) + 3392; // continues the mock ticket sequence
         var ticket = new PortalIrRequest
         {
             InvestorId = session.InvestorId,
             Subject = request.Subject.Trim(),
-            Ref = $"#REQ-{nextNumber}",
+            Regarding = request.Regarding?.Trim(),
+            Message = request.Message.Trim(),
             Date = clock.Today,
             Status = "Open",
         };
         db.PortalIrRequests.Add(ticket);
+        await db.SaveChangesAsync(ct);
+
+        // Derived from the identity, so refs are unique under concurrency and
+        // deletions; the offset lines up with the seeded #REQ-3391 (row id 1).
+        ticket.Ref = $"#REQ-{3390 + ticket.Id}";
 
         await audit.AppendAsync(session.ContactName, "IR request", "neutral",
             $"Portal message {ticket.Ref} · {session.InvestorId}",

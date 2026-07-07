@@ -21,8 +21,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
     .AddControllers()
-    .AddJsonOptions(options =>
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)
+    // Nullable contract fields (types.ts `number | null` etc.) serialize as explicit
+    // null — omitting them breaks the frontend's `!== null` checks.
     .AddOData(options => options
         .AddRouteComponents("odata", BuildEdmModel())
         .Select().Filter().OrderBy().Count().SetMaxTop(200));

@@ -15,18 +15,25 @@ public sealed record WireDto(
 public sealed record WiresDto(string AsOf, WireKpisDto Kpis, IReadOnlyList<WireDto> Wires);
 
 public class WireService(
-    IAppDbContext db, IWireGateway wireGateway, IAuditTrail audit, ICurrentUserProvider currentUser)
+    IAppDbContext db, IWireGateway wireGateway, IAuditTrail audit, ICurrentUserProvider currentUser, IClock clock)
 {
     public async Task<WiresDto> GetAsync(CancellationToken ct = default)
     {
         var kpis = await KpiReader.ForScreenAsync(db, "wires", ct);
         var wires = await db.Wires.AsNoTracking().OrderBy(w => w.Ref).ToListAsync(ct);
 
+        // KPIs are computed from the rows they summarize, so mutations (retry)
+        // can never leave the strip contradicting the list below it.
+        var today = wires.Where(w => w.Date == clock.Today).ToList();
+        var settled = today.Where(w => w.Status == "Settled").ToList();
+        var inFlight = today.Where(w => w.Status is "Queued" or "Sent" or "Acknowledged").ToList();
+
         return new WiresDto(
             kpis.Text("asOf"),
             new WireKpisDto(
-                kpis.Count("wiresToday"), kpis.Number("settledAmount"), kpis.Count("settledCount"),
-                kpis.Number("inFlightAmount"), kpis.Count("inFlightCount"), kpis.Count("exceptions")),
+                today.Count, settled.Sum(w => w.Amount), settled.Count,
+                inFlight.Sum(w => w.Amount), inFlight.Count,
+                wires.Count(w => w.Status == "Exception")),
             wires.Select(ToDto).ToList());
     }
 
@@ -43,10 +50,19 @@ public class WireService(
         if (wire.Status != "Exception")
             throw DomainException.Conflict($"Wire {wire.Ref} is {wire.Status}; only Exception wires can be retried.");
 
-        var counterparty = await db.Investors.AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Name == wire.Counterparty, ct);
-        if (counterparty is { WireInstructionsOnFile: false })
-            throw DomainException.Validation($"{wire.Counterparty} has no wire instructions on file.");
+        // LP-facing wire types must fail closed: an unknown counterparty means the
+        // instructions check cannot run, not that it passed (BUSINESS_RULES — no
+        // wire to an LP without instructions on file). Facility wires go to banks.
+        if (wire.Type is "Capital Call" or "Distribution")
+        {
+            var counterparty = await db.Investors.AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Name == wire.Counterparty, ct);
+            if (counterparty is null)
+                throw DomainException.Conflict(
+                    $"'{wire.Counterparty}' does not match a registered investor — verify the counterparty before retrying.");
+            if (!counterparty.WireInstructionsOnFile)
+                throw DomainException.Validation($"{wire.Counterparty} has no wire instructions on file.");
+        }
 
         var submission = await wireGateway.SubmitAsync(
             new WireInstruction(wire.Rail, wire.Counterparty, wire.Amount, wire.Ref), ct);

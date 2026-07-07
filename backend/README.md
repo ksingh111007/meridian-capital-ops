@@ -29,7 +29,7 @@ backend/
 
 ```bash
 cd backend
-dotnet test                                   # 90 tests: domain unit + API integration
+dotnet test                                   # 93 tests: domain unit + API integration
 dotnet run --project src/Meridian.Api        # http://localhost:8080 (Swagger at /swagger)
 # or
 docker compose up --build
@@ -134,7 +134,9 @@ Seeded users: `u-jchen` (Ops Analyst) · `u-mreyes` (Deal Lead) · `u-spatel`
 
 - **Every mutation appends** to the global **hash-chained audit log**
   (`seal_n = H(seal_{n-1} ‖ event_n)`); `GET /api/admin/audit` re-verifies the
-  chain on read (`kpis.chainValid`).
+  chain on read (`kpis.chainValid`). Each event records the seal it chains from
+  under a unique index, so concurrent API instances (or a retried commit) on the
+  shared Azure SQL database cannot silently fork the chain.
 - Approvals **notify the next approver** through the notification port (default
   adapter writes an outbox row + log).
 - Business errors are typed (`DomainException` Validation/NotFound/Forbidden/
@@ -171,7 +173,7 @@ The **full contract**:
 `GET /api/cash/position` · `GET /api/reconciliation` ·
 `POST /api/reconciliation/{id}/assign` · `GET /api/admin/users|funds|investors|
 reference|integrations|notification-rules|audit|investor-access` ·
-`GET /api/portal/account|investments|activity|statements|tax|contact` ·
+`GET /api/portal/session|account|investments|activity|statements|tax|contact` ·
 `POST /api/portal/messages` · plus additive `GET|POST /api/ops/jobs*` and
 `/odata/Deals`.
 
@@ -185,7 +187,7 @@ statuses, `"Jul 02"` stage dates, amounts in USD millions); extra fields
 ## Testing
 
 `dotnet test` runs both projects. The weight is deliberately on
-**integration tests** (67 of 90): each test class boots the real host via
+**integration tests** (70 of 93): each test class boots the real host via
 `WebApplicationFactory` with its own isolated in-memory database and exercises
 HTTP → auth → RBAC → services → EF/Dapper/SQLite → Quartz end-to-end. Covered:
 the full 9-stage approval pipeline, escalation gating, creation validation

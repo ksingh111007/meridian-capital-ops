@@ -21,11 +21,18 @@ public class ReconciliationService(IAppDbContext db, IAuditTrail audit, ICurrent
         var kpis = await KpiReader.ForScreenAsync(db, "reconciliation", ct);
         var items = await db.ReconItems.AsNoTracking().OrderBy(i => i.Id).ToListAsync(ct);
 
+        // Counts are computed from the items themselves so the strip always
+        // agrees with the list; only asOf/source are published metadata.
+        var matched = items.Count(i => i.Status == "Matched");
+        var breaks = items.Where(i => i.Status == "Break").ToList();
+
         return new ReconciliationDto(
             kpis.Text("asOf"), kpis.Text("source"),
             new ReconKpisDto(
-                kpis.Number("matchedPct"), kpis.Count("matchedCount"), kpis.Count("totalItems"),
-                kpis.Count("exceptions"), kpis.Count("unmatched"), kpis.Number("amountInBreak")),
+                items.Count == 0 ? 0m : Math.Round(matched * 100m / items.Count, 1),
+                matched, items.Count, breaks.Count,
+                items.Count(i => i.Status == "Unmatched"),
+                breaks.Sum(i => Math.Abs(i.Diff))),
             items.Select(ToDto).ToList());
     }
 
@@ -34,6 +41,8 @@ public class ReconciliationService(IAppDbContext db, IAuditTrail audit, ICurrent
     {
         if (string.IsNullOrWhiteSpace(assignee))
             throw DomainException.Validation("An assignee is required.");
+        if (assignee.Length > 100)
+            throw DomainException.Validation("The assignee must be 100 characters or fewer.");
 
         var user = await currentUser.GetRequiredAsync(ct);
         var item = await db.ReconItems.FirstOrDefaultAsync(i => i.Id == id, ct)
