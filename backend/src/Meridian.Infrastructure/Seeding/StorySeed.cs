@@ -6,12 +6,14 @@ using Meridian.Infrastructure.Persistence;
 namespace Meridian.Infrastructure.Seeding;
 
 /// <summary>
-/// Deterministic sample data mirroring the frontend mock story
+/// Deterministic sample data mirroring the frontend mock story 1:1
 /// (meridian-capital-ops/src/mocks + docs/DATA_MODEL.md § Cross-screen consistency):
 /// #C-2041 sits at Legal awaiting J. Okafor, #C-2039 is Returned at CIO with two
-/// overdue wires, #D-119 has Oakmont Blocked (no wire instructions) and Granite in
-/// Exception. Business "today" is pinned to 2026-07-05 in dev. Illustrative, not
-/// authoritative — replaced by the real database project later.
+/// overdue wires, #C-2043/#C-2044 are >$20M calls awaiting CIO + Compliance
+/// sign-off, #D-119 has Oakmont Blocked (no wire instructions) and Granite in
+/// Exception. Business "today" is pinned to 2026-07-05 in dev. When editing, keep
+/// every value consistent with the JSON files in meridian-capital-ops/src/mocks —
+/// the frontend swap depends on both sources telling the same story.
 /// </summary>
 public static class StorySeed
 {
@@ -41,23 +43,28 @@ public static class StorySeed
         new() { Id = "fund-i", Name = "Meridian Private Credit Fund I", ShortName = "Fund I", Vintage = 2016, Committed = 120m, CalledPct = 100m, Strategy = "Opportunistic credit", WaterfallType = WaterfallType.American, Status = FundStatus.Harvesting },
     ];
 
+    // Mirrors src/mocks/deals.json exactly.
     private static List<Deal> Deals() =>
     [
         new() { Id = "deal-atlas", Name = "Project Atlas", Borrower = "Vantage Health", Sector = "Healthcare", Country = "US", FundId = "fund-iii", Tranche = "Term A", Invested = 85m, Outstanding = 80m, Spread = "S+2.50%", NetIrrPct = 13.8m, IrrTrend = "up", Moic = 1.12m, Status = "Performing" },
-        new() { Id = "deal-beacon", Name = "Project Beacon", Borrower = "Beacon Software", Sector = "Technology", Country = "US", FundId = "fund-iii", Tranche = "Unitranche", Invested = 60m, Outstanding = 58m, Spread = "S+3.25%", NetIrrPct = 12.4m, IrrTrend = "flat", Moic = 1.08m, Status = "Performing" },
-        new() { Id = "deal-delta", Name = "Project Delta", Borrower = "Delta Logistics", Sector = "Transportation", Country = "US", FundId = "fund-ii", Tranche = "Term B", Invested = 45m, Outstanding = 44m, Spread = "S+4.00%", NetIrrPct = 9.1m, IrrTrend = "down", Moic = 1.21m, Status = "Watch" },
-        new() { Id = "deal-cedar", Name = "Project Cedar", Borrower = "Cedar Industrial", Sector = "Industrials", Country = "US", FundId = "fund-ii", Tranche = "Term A", Invested = 38m, Outstanding = 0m, Spread = "S+2.75%", NetIrrPct = 11.6m, IrrTrend = "up", Moic = 1.34m, Status = "Performing" },
+        new() { Id = "deal-beacon", Name = "Project Beacon", Borrower = "Nordic Logistics", Sector = "Transport & Logistics", Country = "SE", FundId = "fund-iii", Tranche = "Unitranche", Invested = 110m, Outstanding = 104m, Spread = "S+2.50%", NetIrrPct = 15.1m, IrrTrend = "up", Moic = 1.21m, Status = "Performing" },
+        new() { Id = "deal-cedar", Name = "Project Cedar", Borrower = "Apex Manufacturing", Sector = "Industrials", Country = "US", FundId = "fund-ii", Tranche = "Term B", Invested = 60m, Outstanding = 22m, Spread = "S+2.75%", NetIrrPct = 12.4m, IrrTrend = "flat", Moic = 1.34m, Status = "Performing" },
+        new() { Id = "deal-delta", Name = "Project Delta", Borrower = "Helio Software", Sector = "Technology", Country = "US", FundId = "fund-ii", Tranche = "Term A", Invested = 48m, Outstanding = 40m, Spread = "S+3.25%", NetIrrPct = 9.6m, IrrTrend = "down", Moic = 1.08m, Status = "Watch" },
+        new() { Id = "deal-echo", Name = "Project Echo", Borrower = "Coastal Foods", Sector = "Consumer Staples", Country = "US", FundId = "fund-iii", Tranche = "Term A", Invested = 95m, Outstanding = 88m, Spread = "S+2.50%", NetIrrPct = 16.2m, IrrTrend = "up", Moic = 1.19m, Status = "Performing" },
+        new() { Id = "deal-foxtrot", Name = "Project Foxtrot", Borrower = "Summit Metals", Sector = "Materials", Country = "US", FundId = "fund-ii", Tranche = "Term B", Invested = 52m, Outstanding = 18m, Spread = "S+3.00%", NetIrrPct = 7.1m, IrrTrend = "down", Moic = 0.94m, Status = "Non-accrual" },
+        new() { Id = "deal-gale", Name = "Project Gale", Borrower = "Harborview REIT", Sector = "Real Estate", Country = "US", FundId = "fund-iii", Tranche = "Mezzanine", Invested = 70m, Outstanding = 66m, Spread = "S+4.00%", NetIrrPct = 18.4m, IrrTrend = "up", Moic = 1.27m, Status = "Performing" },
     ];
 
+    // Mirrors src/mocks/investors.json (types, KYC states, wire-instruction flags).
     private static List<Investor> Investors() =>
     [
-        new() { Id = "inv-redwood", Name = "Redwood Pension", Type = "Public pension", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 40m, 28.4m), C("fund-ii", 18m, 17.3m)] },
+        new() { Id = "inv-redwood", Name = "Redwood Pension", Type = "Public Pension", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 40m, 28.4m), C("fund-ii", 18m, 17.3m)] },
         new() { Id = "inv-blueharbor", Name = "Blue Harbor Endowment", Type = "Endowment", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 25m, 17m)] },
-        new() { Id = "inv-cascade", Name = "Cascade Family Office", Type = "Family office", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 60m, 42.9m), C("fund-ii", 30m, 28.8m)] },
-        new() { Id = "inv-granite", Name = "Granite State Insurance", Type = "Insurance", WireInstructionsOnFile = true, Commitments = [C("fund-ii", 35m, 33.6m)] },
-        new() { Id = "inv-summit", Name = "Summit Investments", Type = "Asset manager", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 50m, 36m)] },
-        new() { Id = "inv-oakmont", Name = "Oakmont Trust", Type = "Trust", WireInstructionsOnFile = false, Commitments = [C("fund-ii", 20m, 19.2m)] },
-        new() { Id = "inv-ironwood", Name = "Ironwood Capital", Type = "Fund of funds", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 45m, 31.5m)] },
+        new() { Id = "inv-cascade", Name = "Cascade Family Office", Type = "Family Office", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 60m, 42.9m), C("fund-ii", 30m, 28.8m)] },
+        new() { Id = "inv-granite", Name = "Granite State Insurance", Type = "Insurance", KycStatus = "In review", WireInstructionsOnFile = true, Commitments = [C("fund-ii", 35m, 33.6m)] },
+        new() { Id = "inv-summit", Name = "Summit Investments", Type = "Fund of Funds", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 50m, 36m)] },
+        new() { Id = "inv-oakmont", Name = "Oakmont Trust", Type = "Private Trust", WireInstructionsOnFile = false, Commitments = [C("fund-ii", 20m, 19.2m)] },
+        new() { Id = "inv-ironwood", Name = "Ironwood Capital", Type = "Asset Manager", WireInstructionsOnFile = true, Commitments = [C("fund-iii", 45m, 31.5m)] },
     ];
 
     private static InvestorCommitment C(string fundId, decimal amount, decimal called) =>
@@ -134,53 +141,67 @@ public static class StorySeed
     private static StaffUser U(string id, string name, string initials, string email, string role, string status = "Active") =>
         new() { Id = id, Name = name, Initials = initials, Email = email, RoleName = role, Status = status };
 
+    // Mirrors src/mocks/capital-calls.json exactly (ids, amounts, stages, allocations,
+    // wire statuses, actors, dates). #C-2043/#C-2044 are over the $20M threshold and
+    // carry the CIO + Compliance sign-offs the escalation rule injects (gate = CIO stage).
     private static List<CapitalCall> CapitalCalls() =>
     [
         new()
         {
             Id = "call-2036", Ref = "#C-2036", DealId = "deal-cedar", DealName = "Project Cedar", FundId = "fund-ii",
-            Tranche = "Term A", Borrower = "Cedar Industrial", Amount = 6.75m, DueDate = Day(6, 15),
+            Tranche = "Term B", Borrower = "Apex Manufacturing", Amount = 6.75m, DueDate = Day(7, 11),
             CurrentStage = 9, Status = CallStatus.Completed,
-            Allocations =
+            Allocations = [A("inv-cascade", "Cascade Family Office", 30m, 6.75m, WireStatus.Confirmed)],
+            StageEvents =
             [
-                A("inv-granite", "Granite State Insurance", 35m, 3.5m, WireStatus.Confirmed),
-                A("inv-oakmont", "Oakmont Trust", 20m, 3.25m, WireStatus.Confirmed),
+                E(1, StageState.Done, "J. Chen", Day(6, 24)),
+                E(2, StageState.Done, "M. Reyes", Day(6, 25)),
+                E(3, StageState.Done, "S. Patel", Day(6, 25)),
+                E(4, StageState.Done, "J. Okafor", Day(6, 26)),
+                E(5, StageState.Done, "T. Alvarez", Day(6, 27)),
+                E(6, StageState.Done, "D. Whitfield", Day(6, 28)),
+                E(7, StageState.Done, "System", Day(6, 28)),
+                E(8, StageState.Done, "System", Day(6, 28)),
+                E(9, StageState.Done, "System", Day(6, 29)),
             ],
-            StageEvents = Enumerable.Range(1, 8).Select(order => new StageEvent
-            {
-                Stage = order, State = StageState.Done,
-                Actor = order >= 7 ? "System" : "—", Date = Day(6, 8 + order),
-            }).ToList(),
-            Documents = [new CallDocument { Name = "Capital Call Notice.pdf", By = "Jordan Chen", Date = Day(6, 8) }],
+            Documents = [Doc("Capital Call Notice.pdf", "J. Chen", Day(6, 24))],
             AuditEntries =
             [
-                new CallAuditEntry { Title = "Call created", By = "Jordan Chen", At = At(6, 8, 9, 0), Tone = "neutral" },
-                new CallAuditEntry { Title = "Completed — custodians notified", By = "System", At = At(6, 16, 17, 5), Tone = "green" },
+                Entry("Call created", "System", At(6, 24, 8, 0), "neutral"),
+                Entry("Booked to GL", "System", At(6, 28, 16, 5), "green"),
+                Entry("Custodians notified", "System", At(6, 28, 17, 20), "green"),
+                Entry("Call completed", "System", At(6, 29, 8, 0), "green"),
             ],
         },
         new()
         {
             Id = "call-2039", Ref = "#C-2039", DealId = "deal-delta", DealName = "Project Delta", FundId = "fund-ii",
-            Tranche = "Term B", Borrower = "Delta Logistics", Amount = 18.4m, DueDate = Day(7, 1),
+            Tranche = "Term A", Borrower = "Helio Software", Amount = 18.4m, DueDate = Day(7, 1),
             CurrentStage = 3, Status = CallStatus.Returned,
             Allocations =
             [
+                A("inv-redwood", "Redwood Pension", 18m, 6.2m, WireStatus.Wired),
+                A("inv-cascade", "Cascade Family Office", 30m, 5.1m, WireStatus.Wired),
                 A("inv-granite", "Granite State Insurance", 35m, 4.3m, WireStatus.Overdue),
                 A("inv-oakmont", "Oakmont Trust", 20m, 2.8m, WireStatus.Overdue),
-                A("inv-cascade", "Cascade Family Office", 30m, 6.5m, WireStatus.Wired),
-                A("inv-redwood", "Redwood Pension", 18m, 4.8m, WireStatus.Confirmed),
             ],
             StageEvents =
             [
-                E(1, StageState.Done, "Jordan Chen", Day(6, 24)),
-                E(2, StageState.Done, "Maria Reyes", Day(6, 25)),
-                new StageEvent { Stage = 3, State = StageState.Current, Date = Day(7, 4), Note = "Returned from Legal" },
+                E(1, StageState.Done, "J. Chen", Day(6, 20)),
+                E(2, StageState.Done, "M. Reyes", Day(6, 22)),
+                new StageEvent { Stage = 3, State = StageState.Current, Actor = "S. Patel", Date = Day(7, 4), Note = "Returned for re-review" },
             ],
-            Documents = [new CallDocument { Name = "Capital Call Notice.pdf", By = "Jordan Chen", Date = Day(6, 24) }],
+            Documents =
+            [
+                Doc("Capital Call Notice.pdf", "J. Chen", Day(6, 20)),
+                Doc("Allocation Memo (rev 2).pdf", "D. Whitfield", Day(7, 4)),
+            ],
             AuditEntries =
             [
-                new CallAuditEntry { Title = "Call created", By = "Jordan Chen", At = At(6, 24, 10, 0), Tone = "neutral" },
-                new CallAuditEntry { Title = "Legal returned the call to CIO", By = "J. Okafor", At = At(7, 4, 15, 30), Comment = "Allocations edited after approval began — re-approval required", Tone = "amber" },
+                Entry("Call created", "System", At(6, 20, 8, 0), "neutral"),
+                Entry("CIO approved", "S. Patel", At(6, 23, 12, 0), "green"),
+                Entry("Allocation edited", "D. Whitfield", At(7, 4, 10, 15), "amber", "$5.10M → $5.00M correction reversed"),
+                Entry("Returned to CIO", "J. Okafor", At(7, 4, 14, 22), "amber", "Allocation revision needs CIO re-approval"),
             ],
         },
         new()
@@ -196,52 +217,112 @@ public static class StorySeed
             ],
             StageEvents =
             [
-                E(1, StageState.Done, "Jordan Chen", Day(7, 1)),
-                E(2, StageState.Done, "Maria Reyes", Day(7, 2)),
-                E(3, StageState.Done, "Sanjay Patel", Day(7, 2), comment: "Cleared to proceed"),
+                E(1, StageState.Done, "J. Chen", Day(7, 1)),
+                E(2, StageState.Done, "M. Reyes", Day(7, 2)),
+                E(3, StageState.Done, "S. Patel", Day(7, 2), comment: "Cleared to proceed"),
                 new StageEvent { Stage = 4, State = StageState.Current, Actor = "J. Okafor", Date = Day(7, 4), Note = "In review" },
             ],
             Documents =
             [
-                new CallDocument { Name = "Capital Call Notice.pdf", By = "Jordan Chen", Date = Day(7, 1) },
-                new CallDocument { Name = "Wire Instructions.pdf", By = "Operations", Date = Day(7, 1) },
-                new CallDocument { Name = "LPA Excerpt — §4.2.pdf", By = "Legal", Date = Day(7, 4) },
+                Doc("Capital Call Notice.pdf", "J. Chen", Day(7, 1)),
+                Doc("Wire Instructions.pdf", "Operations", Day(7, 1)),
+                Doc("LPA Excerpt — §4.2.pdf", "Legal", Day(7, 4)),
             ],
             AuditEntries =
             [
-                new CallAuditEntry { Title = "Call created", By = "System", At = At(7, 1, 8, 0), Tone = "neutral" },
-                new CallAuditEntry { Title = "Submitted for review", By = "Jordan Chen", At = At(7, 1, 14, 2), Tone = "green" },
-                new CallAuditEntry { Title = "Front Office approved", By = "Maria Reyes", At = At(7, 2, 9, 15), Tone = "green" },
-                new CallAuditEntry { Title = "CIO approved", By = "Sanjay Patel", At = At(7, 2, 16, 40), Comment = "Cleared to proceed", Tone = "green" },
-                new CallAuditEntry { Title = "Legal review started", By = "J. Okafor", At = At(7, 4, 10, 12), Tone = "blue" },
+                Entry("Call created", "System", At(7, 1, 8, 0), "neutral"),
+                Entry("Submitted for review", "J. Chen", At(7, 1, 14, 2), "green"),
+                Entry("Front Office approved", "M. Reyes", At(7, 2, 9, 15), "green"),
+                Entry("CIO approved", "S. Patel", At(7, 2, 16, 40), "green", "Cleared to proceed"),
+                Entry("Legal review started", "J. Okafor", At(7, 4, 10, 12), "blue"),
             ],
         },
         new()
         {
             Id = "call-2042", Ref = "#C-2042", DealId = "deal-beacon", DealName = "Project Beacon", FundId = "fund-iii",
-            Tranche = "Unitranche", Borrower = "Beacon Software", Amount = 26.3m, DueDate = Day(7, 15),
+            Tranche = "Unitranche", Borrower = "Nordic Logistics", Amount = 26.3m, DueDate = Day(7, 9),
             CurrentStage = 5, Status = CallStatus.Pending,
             Allocations =
             [
-                A("inv-summit", "Summit Investments", 50m, 10.5m, WireStatus.Pending),
-                A("inv-ironwood", "Ironwood Capital", 45m, 9.4m, WireStatus.Pending),
-                A("inv-cascade", "Cascade Family Office", 60m, 6.4m, WireStatus.Pending),
+                A("inv-cascade", "Cascade Family Office", 60m, 14.4m, WireStatus.Scheduled),
+                A("inv-summit", "Summit Investments", 50m, 11.9m, WireStatus.Scheduled),
             ],
             StageEvents =
             [
-                E(1, StageState.Done, "Jordan Chen", Day(6, 30)),
-                E(2, StageState.Done, "Maria Reyes", Day(7, 1)),
-                E(3, StageState.Done, "Sanjay Patel", Day(7, 2)),
+                E(1, StageState.Done, "J. Chen", Day(6, 30)),
+                E(2, StageState.Done, "M. Reyes", Day(7, 1)),
+                E(3, StageState.Done, "S. Patel", Day(7, 2)),
                 E(4, StageState.Done, "J. Okafor", Day(7, 3)),
-                new StageEvent { Stage = 5, State = StageState.Current, Date = Day(7, 3), Note = "In review" },
+                new StageEvent { Stage = 5, State = StageState.Current, Actor = "T. Alvarez", Date = Day(7, 4), Note = "Awaiting review" },
             ],
-            Documents = [new CallDocument { Name = "Capital Call Notice.pdf", By = "Jordan Chen", Date = Day(6, 30) }],
+            Documents =
+            [
+                Doc("Capital Call Notice.pdf", "J. Chen", Day(6, 30)),
+                Doc("Wire Instructions.pdf", "Operations", Day(6, 30)),
+            ],
             AuditEntries =
             [
-                new CallAuditEntry { Title = "Call created", By = "Jordan Chen", At = At(6, 30, 9, 30), Tone = "neutral" },
-                new CallAuditEntry { Title = "Escalation cleared — CIO + Compliance sign-off", By = "System", At = At(7, 2, 12, 0), Tone = "green" },
+                Entry("Call created", "System", At(6, 30, 8, 0), "neutral"),
+                Entry("Submitted for review", "J. Chen", At(6, 30, 9, 12), "green"),
+                Entry("Front Office approved", "M. Reyes", At(7, 1, 10, 30), "green"),
+                Entry("CIO approved", "S. Patel", At(7, 2, 11, 5), "green"),
+                Entry("Legal approved", "J. Okafor", At(7, 3, 15, 20), "green"),
             ],
         },
+        new()
+        {
+            Id = "call-2043", Ref = "#C-2043", DealId = "deal-echo", DealName = "Project Echo", FundId = "fund-iii",
+            Tranche = "Term A", Borrower = "Coastal Foods", Amount = 120m, DueDate = Day(8, 4),
+            CurrentStage = 1, Status = CallStatus.InReview,
+            EscalationSignoffs = AmountEscalation(),
+            Allocations =
+            [
+                A("inv-redwood", "Redwood Pension", 40m, 21.8m, WireStatus.Pending),
+                A("inv-blueharbor", "Blue Harbor Endowment", 25m, 13.6m, WireStatus.Pending),
+                A("inv-cascade", "Cascade Family Office", 60m, 32.7m, WireStatus.Pending),
+                A("inv-summit", "Summit Investments", 50m, 27.3m, WireStatus.Pending),
+                A("inv-ironwood", "Ironwood Capital", 45m, 24.6m, WireStatus.Pending),
+            ],
+            StageEvents =
+            [
+                new StageEvent { Stage = 1, State = StageState.Current, Actor = "J. Chen", Date = Day(7, 4), Note = "In review · escalation: >$20M requires CIO + Compliance" },
+            ],
+            Documents = [Doc("Capital Call Notice (draft).pdf", "J. Chen", Day(7, 4))],
+            AuditEntries = [Entry("Call created", "J. Chen", At(7, 4, 9, 30), "neutral")],
+        },
+        new()
+        {
+            Id = "call-2044", Ref = "#C-2044", DealId = "deal-gale", DealName = "Project Gale", FundId = "fund-iii",
+            Tranche = "Mezzanine", Borrower = "Harborview REIT", Amount = 60.55m, DueDate = Day(7, 29),
+            CurrentStage = 2, Status = CallStatus.InReview,
+            EscalationSignoffs = AmountEscalation(),
+            Allocations =
+            [
+                A("inv-redwood", "Redwood Pension", 40m, 11m, WireStatus.Pending),
+                A("inv-blueharbor", "Blue Harbor Endowment", 25m, 6.9m, WireStatus.Pending),
+                A("inv-cascade", "Cascade Family Office", 60m, 16.5m, WireStatus.Pending),
+                A("inv-summit", "Summit Investments", 50m, 13.8m, WireStatus.Pending),
+                A("inv-ironwood", "Ironwood Capital", 45m, 12.35m, WireStatus.Pending),
+            ],
+            StageEvents =
+            [
+                E(1, StageState.Done, "J. Chen", Day(7, 2)),
+                new StageEvent { Stage = 2, State = StageState.Current, Actor = "M. Reyes", Date = Day(7, 3), Note = "In review · escalation: >$20M requires CIO + Compliance" },
+            ],
+            Documents = [Doc("Capital Call Notice.pdf", "J. Chen", Day(7, 2))],
+            AuditEntries =
+            [
+                Entry("Call created", "System", At(7, 2, 8, 0), "neutral"),
+                Entry("Operations approved", "J. Chen", At(7, 2, 15, 45), "green"),
+            ],
+        },
+    ];
+
+    /// <summary>The esc-amount rule's injected sign-offs; gate = the CIO stage (3).</summary>
+    private static List<EscalationSignoff> AmountEscalation() =>
+    [
+        new() { RuleId = "esc-amount", Role = "CIO", GateStage = 3 },
+        new() { RuleId = "esc-amount", Role = "Compliance", GateStage = 3 },
     ];
 
     private static CallAllocation A(string id, string name, decimal commitment, decimal amount, WireStatus status) =>
@@ -250,27 +331,75 @@ public static class StorySeed
     private static StageEvent E(int stage, StageState state, string actor, DateOnly date, string? comment = null) =>
         new() { Stage = stage, State = state, Actor = actor, Date = date, Comment = comment };
 
+    private static CallDocument Doc(string name, string by, DateOnly date) =>
+        new() { Name = name, By = by, Date = date };
+
+    private static CallAuditEntry Entry(string title, string by, DateTime at, string tone, string? comment = null) =>
+        new() { Title = title, By = by, At = at, Tone = tone, Comment = comment };
+
+    // Mirrors src/mocks/distributions.json exactly.
     private static List<Distribution> Distributions() =>
     [
         new()
         {
-            Id = "dist-118", Ref = "#D-118", FundId = "fund-iii", Distributable = 8m, LpTotal = 7.4m, GpTotal = 0.6m,
-            PaymentDate = Day(6, 20), Status = DistributionStatus.Paid, WaterfallType = WaterfallType.European,
-            SourceNote = "Beacon interest + amortization",
+            Id = "dist-116", Ref = "#D-116", FundId = "fund-ii", Distributable = 10.6m, LpTotal = 10m, GpTotal = 0.6m,
+            PaymentDate = Day(3, 31), Status = DistributionStatus.Paid, WaterfallType = WaterfallType.European,
+            SourceNote = "Interest income",
             Tiers =
             [
-                T("1 · Return of Capital", "Contributed capital", "100% LP", 5m, 5m, null, 3m),
-                T("2 · Preferred Return", "Hurdle on capital", "8.0%", 1.2m, 1.2m, null, 1.8m),
-                T("3 · GP Catch-up", "Until GP = 20% of profit", "100% GP", 0.3m, null, 0.3m, 1.5m),
-                T("4 · Carried Interest", "Residual profit split", "80 / 20", 1.5m, 1.2m, 0.3m, 0m),
+                T("1 · Return of Capital", "Contributed capital", "100% LP", 7.5m, 7.5m, null, 3.1m),
+                T("2 · Preferred Return", "Hurdle on capital", "8.0%", 1.7m, 1.7m, null, 1.4m),
+                T("3 · GP Catch-up", "Until GP = 20% of profit", "100% GP", 0.4m, null, 0.4m, 1m),
+                T("4 · Carried Interest", "Residual profit split", "80 / 20", 1m, 0.8m, 0.2m, 0m),
             ],
             Payouts =
             [
-                P("inv-redwood", "Redwood Pension", 40m, 1.35m, 18.2m, PayoutStatus.Paid, wireRef: "W-8830"),
-                P("inv-blueharbor", "Blue Harbor Endowment", 25m, 0.84m, 11.4m, PayoutStatus.Paid, wireRef: "W-8831"),
-                P("inv-cascade", "Cascade Family Office", 60m, 2.02m, 27.3m, PayoutStatus.Paid, wireRef: "W-8832"),
-                P("inv-summit", "Summit Investments", 50m, 1.68m, 22.7m, PayoutStatus.Paid, wireRef: "W-8833"),
-                P("inv-ironwood", "Ironwood Capital", 45m, 1.51m, 20.4m, PayoutStatus.Paid, wireRef: "W-8834"),
+                P("inv-redwood", "Redwood Pension", 18m, 1.75m, 17.5m, PayoutStatus.Paid),
+                P("inv-cascade", "Cascade Family Office", 30m, 2.91m, 29.1m, PayoutStatus.Paid),
+                P("inv-granite", "Granite State Insurance", 35m, 3.4m, 34m, PayoutStatus.Paid),
+                P("inv-oakmont", "Oakmont Trust", 20m, 1.94m, 19.4m, PayoutStatus.Paid),
+            ],
+        },
+        new()
+        {
+            Id = "dist-117", Ref = "#D-117", FundId = "fund-iii", Distributable = 19.9m, LpTotal = 18.7m, GpTotal = 1.2m,
+            PaymentDate = Day(6, 30), Status = DistributionStatus.Paid, WaterfallType = WaterfallType.European,
+            SourceNote = "Interest income",
+            Tiers =
+            [
+                T("1 · Return of Capital", "Contributed capital", "100% LP", 14m, 14m, null, 5.9m),
+                T("2 · Preferred Return", "Hurdle on capital", "8.0%", 2.9m, 2.9m, null, 3m),
+                T("3 · GP Catch-up", "Until GP = 20% of profit", "100% GP", 0.75m, null, 0.75m, 2.25m),
+                T("4 · Carried Interest", "Residual profit split", "80 / 20", 2.25m, 1.8m, 0.45m, 0m),
+            ],
+            Payouts =
+            [
+                P("inv-redwood", "Redwood Pension", 40m, 3.4m, 18.2m, PayoutStatus.Paid),
+                P("inv-blueharbor", "Blue Harbor Endowment", 25m, 2.13m, 11.4m, PayoutStatus.Paid),
+                P("inv-cascade", "Cascade Family Office", 60m, 5.1m, 27.3m, PayoutStatus.Paid),
+                P("inv-summit", "Summit Investments", 50m, 4.25m, 22.7m, PayoutStatus.Paid),
+                P("inv-ironwood", "Ironwood Capital", 45m, 3.82m, 20.4m, PayoutStatus.Paid),
+            ],
+        },
+        new()
+        {
+            Id = "dist-118", Ref = "#D-118", FundId = "fund-iii", Distributable = 42m, LpTotal = 39.2m, GpTotal = 2.8m,
+            PaymentDate = Day(9, 30), Status = DistributionStatus.Scheduled, WaterfallType = WaterfallType.European,
+            SourceNote = "Loan repayments + interest",
+            Tiers =
+            [
+                T("1 · Return of Capital", "Contributed capital", "100% LP", 28m, 28m, null, 14m),
+                T("2 · Preferred Return", "Hurdle on capital", "8.0%", 6m, 6m, null, 8m),
+                T("3 · GP Catch-up", "Until GP = 20% of profit", "100% GP", 1.5m, null, 1.5m, 6.5m),
+                T("4 · Carried Interest", "Residual profit split", "80 / 20", 6.5m, 5.2m, 1.3m, 0m),
+            ],
+            Payouts =
+            [
+                P("inv-redwood", "Redwood Pension", 40m, 7.13m, 18.2m, PayoutStatus.Scheduled),
+                P("inv-blueharbor", "Blue Harbor Endowment", 25m, 4.45m, 11.4m, PayoutStatus.Scheduled),
+                P("inv-cascade", "Cascade Family Office", 60m, 10.69m, 27.3m, PayoutStatus.Scheduled),
+                P("inv-summit", "Summit Investments", 50m, 8.91m, 22.7m, PayoutStatus.Scheduled),
+                P("inv-ironwood", "Ironwood Capital", 45m, 8.02m, 20.4m, PayoutStatus.Scheduled),
             ],
         },
         new()
@@ -325,7 +454,7 @@ public static class StorySeed
         Append(At(7, 2, 16, 40), "Sanjay Patel", "Approved", "green", "Call #C-2041 · CIO", "“Cleared to proceed”");
         Append(At(7, 3, 9, 0), "System", "Payment run", "blue", "Distribution #D-119", "$12.00M LP payouts queued");
         Append(At(7, 3, 11, 20), "System", "Exception", "red", "Wire W-8847 · Granite State Insurance", "SWIFT gateway rejected — certificate expired");
-        Append(At(7, 4, 15, 30), "J. Okafor", "Returned", "amber", "Call #C-2039 · returned to CIO", "“Allocations edited after approval began — re-approval required”");
+        Append(At(7, 4, 14, 22), "J. Okafor", "Returned", "amber", "Call #C-2039 · returned to CIO", "“Allocation revision needs CIO re-approval”");
 
         return events;
     }

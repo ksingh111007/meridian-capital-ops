@@ -16,12 +16,17 @@ public class OverdueSweepService(IAppDbContext db, IClock clock, IAuditTrail aud
 {
     public async Task<int> SweepAsync(CancellationToken ct = default)
     {
-        var calls = await db.CapitalCalls
-            .Where(c => c.Status != CallStatus.Completed)
+        // Wire status is independent of pipeline status: a Completed call can still
+        // carry unpaid allocations, so the filter is the due date, never Call.Status.
+        var today = clock.Today;
+        var pastDue = await db.CapitalCalls
+            .Where(c => c.DueDate < today)
             .ToListAsync(ct);
 
         var flipped = 0;
-        foreach (var call in calls.Where(c => c.DueDate < clock.Today))
+        var auditEntries = new List<AuditEntry>();
+        var alerts = new List<(string Subject, string Body)>();
+        foreach (var call in pastDue)
         {
             var late = call.Allocations
                 .Where(a => a.WireStatus is WireStatus.Pending or WireStatus.Scheduled)
@@ -32,21 +37,28 @@ public class OverdueSweepService(IAppDbContext db, IClock clock, IAuditTrail aud
             foreach (var allocation in late)
                 allocation.WireStatus = WireStatus.Overdue;
             flipped += late.Count;
+            call.Version++;
 
+            var noun = $"{late.Count} allocation{(late.Count == 1 ? "" : "s")}";
             call.AuditEntries.Add(new CallAuditEntry
             {
-                Title = $"{late.Count} allocation{(late.Count == 1 ? "" : "s")} marked overdue",
+                Title = $"{noun} marked overdue",
                 By = "System",
                 At = clock.UtcNow,
                 Tone = "red",
             });
-            await audit.AppendAsync("System", "Overdue", "red", $"Call {call.Ref}",
-                $"{late.Count} allocation{(late.Count == 1 ? "" : "s")} unpaid past {call.DueDate:yyyy-MM-dd}", ct);
-            await notifications.NotifyRoleAsync("Ops Manager", $"Overdue wires on Call {call.Ref}",
-                $"{Display.Money(late.Sum(a => a.Amount))} unpaid past {call.DueDate:yyyy-MM-dd}", ct);
+            auditEntries.Add(new AuditEntry("System", "Overdue", "red", $"Call {call.Ref}",
+                $"{noun} unpaid past {call.DueDate:yyyy-MM-dd}"));
+            alerts.Add(($"Overdue wires on Call {call.Ref}",
+                $"{Display.Money(late.Sum(a => a.Amount))} unpaid past {call.DueDate:yyyy-MM-dd}"));
         }
 
-        await db.SaveChangesAsync(ct);
+        // Single atomic commit for every flip and its audit event — a mid-sweep
+        // failure persists nothing, and re-running never double-audits.
+        await audit.AppendAllAsync(auditEntries, ct);
+        foreach (var (subject, body) in alerts)
+            await notifications.NotifyRoleAsync("Ops Manager", subject, body, ct);
+
         return flipped;
     }
 }

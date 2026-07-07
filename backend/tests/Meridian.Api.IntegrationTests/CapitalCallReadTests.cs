@@ -71,6 +71,12 @@ public class CapitalCallReadTests(MeridianApiFactory factory) : IClassFixture<Me
         Assert.Equal(9, stages.Count);
         Assert.Equal("Counsel", (string?)stages.Single(s => (int?)s!["order"] == 4)!["approverRole"]);
         Assert.True((bool?)stages.Single(s => (int?)s!["order"] == 9)!["terminal"]);
-        Assert.Equal(3, workflow["escalationRules"]!.AsArray().Count);
+
+        // All three rules are configured, but only the amount rule is enforceable
+        // today — the API must not present the others as silently effective.
+        var rules = workflow["escalationRules"]!.AsArray();
+        Assert.Equal(3, rules.Count);
+        Assert.True((bool?)rules.Single(r => ((string?)r!["condition"])!.Contains("$20M"))!["enforced"]);
+        Assert.False((bool?)rules.Single(r => (string?)r!["condition"] == "Cross-fund allocation")!["enforced"]);
     }
 }

@@ -68,10 +68,21 @@ public class ApprovalFlowTests(MeridianApiFactory factory) : IClassFixture<Merid
         var call = await factory.CreateClientFor(Users.OpsAnalyst).GetJsonAsync($"/api/capital-calls/{id}");
         Assert.Equal("Completed", (string?)call["status"]);
         Assert.Equal(9, (int?)call["currentStage"]);
-        // Stages 7 and 8 auto-advanced by the system.
+        // Stages 7 and 8 auto-advanced by the system; the terminal stage 9 gets its
+        // own done event and the trail records completion (mock #C-2036 parity).
         var events = call["stageEvents"]!.AsArray();
         Assert.Equal("System", (string?)events.Single(e => (int?)e!["stage"] == 7)!["actor"]);
         Assert.Equal("done", (string?)events.Single(e => (int?)e!["stage"] == 8)!["state"]);
+        Assert.Equal("done", (string?)events.Single(e => (int?)e!["stage"] == 9)!["state"]);
+        Assert.Contains(call["audit"]!.AsArray(), a => (string?)a!["title"] == "Call completed");
+
+        // The global audit log recorded the auto stages and the completion.
+        var log = await factory.CreateClientFor(Users.Compliance).GetJsonAsync("/api/admin/audit");
+        var logEvents = log["events"]!.AsArray();
+        Assert.Contains(logEvents, e => (string?)e!["action"] == "Stage completed"
+            && ((string?)e!["object"])!.Contains("Custodians Notified"));
+        Assert.Contains(logEvents, e => (string?)e!["action"] == "Completed");
+        Assert.True((bool?)log["kpis"]!["chainValid"]);
     }
 
     [Fact]

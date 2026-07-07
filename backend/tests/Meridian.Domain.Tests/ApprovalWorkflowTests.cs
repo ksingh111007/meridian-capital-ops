@@ -115,27 +115,31 @@ public class ApprovalWorkflowTests
         Assert.Equal(ErrorKind.Conflict, ex.Kind);
     }
 
+    private static List<EscalationSignoff> AmountSignoffs() =>
+    [
+        new() { RuleId = "esc-amount", Role = "CIO", GateStage = 3 },
+        new() { RuleId = "esc-amount", Role = "Compliance", GateStage = 3 },
+    ];
+
     [Fact]
     public void Escalation_SignoffClears_WithoutAdvancingStage()
     {
         var call = Call(stage: 3);
-        call.PendingEscalations = ["CIO", "Compliance"];
-        call.EscalationGateStage = 3;
+        call.EscalationSignoffs = AmountSignoffs();
 
         var outcome = ApprovalWorkflow.Approve(call, Stages(),
             new Actor("Priya Nair", "Compliance", false), "Reviewed", Today, Now);
 
         Assert.True(outcome.EscalationSignoffOnly);
         Assert.Equal(3, call.CurrentStage);
-        Assert.Equal(["CIO"], call.PendingEscalations);
+        Assert.Equal(["CIO"], call.EscalationSignoffs.Select(s => s.Role));
     }
 
     [Fact]
     public void Escalation_GateBlocksStageApproval_UntilAllSignoffsLand()
     {
         var call = Call(stage: 3);
-        call.PendingEscalations = ["CIO", "Compliance"];
-        call.EscalationGateStage = 3;
+        call.EscalationSignoffs = AmountSignoffs();
 
         // CIO owns stage 3 and clears their own escalation entry, but Compliance is outstanding.
         var ex = Assert.Throws<DomainException>(() => ApprovalWorkflow.Approve(
@@ -148,6 +152,45 @@ public class ApprovalWorkflowTests
         var outcome = ApprovalWorkflow.Approve(call, Stages(), new Actor("Sanjay Patel", "CIO", false), "Proceed", Today, Now);
         Assert.False(outcome.EscalationSignoffOnly);
         Assert.Equal(4, call.CurrentStage);
-        Assert.Empty(call.PendingEscalations);
+        Assert.Empty(call.EscalationSignoffs);
+    }
+
+    [Fact]
+    public void Escalation_RulesWithDifferentGates_DoNotWeakenEachOther()
+    {
+        // Rule A gates at stage 3 (CIO), rule B gates at stage 4 (Legal). A pending
+        // stage-3 sign-off must still block stage 3 even though rule B's gate is higher.
+        var call = Call(stage: 3);
+        call.EscalationSignoffs =
+        [
+            new() { RuleId = "rule-a", Role = "Compliance", GateStage = 3 },
+            new() { RuleId = "rule-b", Role = "Counsel", GateStage = 4 },
+        ];
+
+        var ex = Assert.Throws<DomainException>(() => ApprovalWorkflow.Approve(
+            call, Stages(), new Actor("Sanjay Patel", "CIO", false), "Proceed", Today, Now));
+        Assert.Equal(ErrorKind.Conflict, ex.Kind);
+        Assert.Contains("Compliance", ex.Message);
+        Assert.DoesNotContain("Counsel", ex.Message); // rule B's gate hasn't been reached
+
+        // Compliance signs off; stage 3 may now pass, but rule B still gates stage 4.
+        ApprovalWorkflow.Approve(call, Stages(), new Actor("Priya Nair", "Compliance", false), "Reviewed", Today, Now);
+        ApprovalWorkflow.Approve(call, Stages(), new Actor("Sanjay Patel", "CIO", false), "Proceed", Today, Now);
+        Assert.Equal(4, call.CurrentStage);
+        var blocked = Assert.Throws<DomainException>(() => ApprovalWorkflow.Approve(
+            call, Stages(), new Actor("Avery Whitman", "Administrator", true), "Push through", Today, Now));
+        Assert.Contains("Counsel", blocked.Message);
+    }
+
+    [Fact]
+    public void Approve_Terminal_WritesStageNineEventAndCompletionAuditEntry()
+    {
+        var call = Call(stage: 6);
+        var outcome = ApprovalWorkflow.Approve(call, Stages(),
+            new Actor("Dana Whitfield", "Fund Accountant", false), "Booked", Today, Now);
+
+        Assert.Equal(["Book", "Custodians Notified"], outcome.AutoAdvancedStages);
+        Assert.Equal(StageState.Done, call.StageEvents.Single(e => e.Stage == 9).State);
+        Assert.Contains(call.AuditEntries, a => a.Title == "Call completed");
     }
 }

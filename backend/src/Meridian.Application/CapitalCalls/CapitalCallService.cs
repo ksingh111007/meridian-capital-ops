@@ -14,6 +14,11 @@ public class CapitalCallService(
     IAuditTrail audit,
     INotificationService notifications)
 {
+    // Serializes id generation + insert: creation ids are max+1, so two concurrent
+    // creates would otherwise mint the same key. A DB sequence replaces this when
+    // the real database project lands.
+    private static readonly SemaphoreSlim CreateGate = new(1, 1);
+
     public async Task<IReadOnlyList<CapitalCallDto>> ListAsync(CancellationToken ct = default)
     {
         var calls = await db.CapitalCalls.AsNoTracking().ToListAsync(ct);
@@ -46,59 +51,80 @@ public class CapitalCallService(
 
         var stages = await db.WorkflowStages.AsNoTracking().OrderBy(s => s.Order).ToListAsync(ct);
         var rules = await db.EscalationRules.AsNoTracking().ToListAsync(ct);
-        var (id, reference) = await NextIdAsync(ct);
         var now = clock.UtcNow;
 
-        var call = new CapitalCall
+        CapitalCall call;
+        await CreateGate.WaitAsync(ct);
+        try
         {
-            Id = id,
-            Ref = reference,
-            DealId = deal.Id,
-            DealName = deal.Name,
-            FundId = deal.FundId,
-            Tranche = deal.Tranche,
-            Borrower = deal.Borrower,
-            Amount = request.Amount,
-            DueDate = request.DueDate,
-            Basis = basis,
-            CurrentStage = 1,
-            Status = CallStatus.InReview,
-            Allocations = allocations,
-            StageEvents =
-            [
-                new StageEvent { Stage = 1, State = StageState.Current, Actor = user.Name, Date = clock.Today, Note = "In review" },
-            ],
-            Documents =
-            [
-                new CallDocument { Name = "Capital Call Notice.pdf", By = user.Name, Date = clock.Today },
-            ],
-            AuditEntries =
-            [
-                new CallAuditEntry { Title = "Call created", By = user.Name, At = now, Tone = "neutral" },
-                new CallAuditEntry { Title = "Notices queued", By = "System", At = now.AddSeconds(1), Tone = "blue" },
-            ],
-        };
-
-        var escalations = EscalationEvaluator.Apply(call, rules, stages);
-        foreach (var rule in escalations)
-        {
-            call.AuditEntries.Add(new CallAuditEntry
+            var (id, reference) = await NextIdAsync(ct);
+            call = new CapitalCall
             {
-                Title = $"Escalation triggered — {rule.Effect}",
-                By = "System",
-                At = now.AddSeconds(2),
-                Tone = "amber",
-            });
+                Id = id,
+                Ref = reference,
+                DealId = deal.Id,
+                DealName = deal.Name,
+                FundId = deal.FundId,
+                Tranche = deal.Tranche,
+                Borrower = deal.Borrower,
+                Amount = request.Amount,
+                DueDate = request.DueDate,
+                Basis = basis,
+                CurrentStage = 1,
+                Status = CallStatus.InReview,
+                Allocations = allocations,
+                StageEvents =
+                [
+                    new StageEvent { Stage = 1, State = StageState.Current, Actor = user.Name, Date = clock.Today, Note = "In review" },
+                ],
+                Documents =
+                [
+                    new CallDocument { Name = "Capital Call Notice.pdf", By = user.Name, Date = clock.Today },
+                ],
+                AuditEntries =
+                [
+                    new CallAuditEntry { Title = "Call created", By = user.Name, At = now, Tone = "neutral" },
+                    new CallAuditEntry { Title = "Notices queued", By = "System", At = now.AddSeconds(1), Tone = "blue" },
+                ],
+            };
+
+            var escalations = EscalationEvaluator.Apply(call, rules, stages);
+            foreach (var rule in escalations)
+            {
+                call.AuditEntries.Add(new CallAuditEntry
+                {
+                    Title = $"Escalation triggered — {rule.Effect}",
+                    By = "System",
+                    At = now.AddSeconds(2),
+                    Tone = "amber",
+                });
+            }
+
+            db.CapitalCalls.Add(call);
+
+            // One atomic commit: the call and its audit events land together.
+            var auditEntries = new List<AuditEntry>
+            {
+                new(user.Name, "Created", "green", $"Call {call.Ref} · {call.DealName}",
+                    $"{Display.Money(call.Amount)} due {call.DueDate:yyyy-MM-dd} · basis {basis.ToDisplay()}"),
+            };
+            auditEntries.AddRange(escalations.Select(rule =>
+                new AuditEntry("System", "Escalation", "amber", $"Call {call.Ref}", rule.Effect)));
+            await audit.AppendAllAsync(auditEntries, ct);
+        }
+        finally
+        {
+            CreateGate.Release();
         }
 
-        db.CapitalCalls.Add(call);
-        await db.SaveChangesAsync(ct);
-
-        await audit.AppendAsync(user.Name, "Created", "green",
-            $"Call {call.Ref} · {call.DealName}",
-            $"{Display.Money(call.Amount)} due {call.DueDate:yyyy-MM-dd} · basis {basis.ToDisplay()}", ct);
-        foreach (var rule in escalations)
-            await audit.AppendAsync("System", "Escalation", "amber", $"Call {call.Ref}", rule.Effect, ct);
+        // Queue the investor notices the audit trail just recorded (outbox rows;
+        // real LP delivery channels replace the adapter behind the port).
+        foreach (var allocation in call.Allocations)
+        {
+            await notifications.NotifyRoleAsync($"investor:{allocation.InvestorId}",
+                $"Capital call notice — {call.Ref} · {call.DealName}",
+                $"{Display.Money(allocation.Amount)} due {call.DueDate:yyyy-MM-dd}", ct);
+        }
 
         var firstStage = stages.First(s => s.Order == 1);
         await notifications.NotifyRoleAsync(firstStage.ApproverRole,
@@ -125,16 +151,24 @@ public class CapitalCallService(
         if (approve)
         {
             var outcome = ApprovalWorkflow.Approve(call, stages, actor, comment, clock.Today, clock.UtcNow);
-            await db.SaveChangesAsync(ct);
+            call.Version++;
 
+            // One atomic commit for the stage transition and every audit event it produced.
             var action = outcome.EscalationSignoffOnly ? "Escalation sign-off" : "Approved";
-            await audit.AppendAsync(user.Name, action, "green",
-                $"Call {call.Ref} · {outcome.ActedStageName}", Quote(comment), ct);
+            var entries = new List<AuditEntry>
+            {
+                new(user.Name, action, "green", $"Call {call.Ref} · {outcome.ActedStageName}", Quote(comment)),
+            };
+            entries.AddRange(outcome.AutoAdvancedStages.Select(stageName =>
+                new AuditEntry("System", "Stage completed", "blue", $"Call {call.Ref} · {stageName}", "")));
+            if (outcome.Completed)
+                entries.Add(new AuditEntry("System", "Completed", "green", $"Call {call.Ref}", "All approval stages cleared"));
+            await audit.AppendAllAsync(entries, ct);
 
             if (outcome.Completed)
             {
                 await notifications.NotifyRoleAsync("Ops Manager", $"Call {call.Ref} completed",
-                    "All approval stages cleared; custodians notified.", ct);
+                    "All approval stages cleared.", ct);
             }
             else if (!outcome.EscalationSignoffOnly && outcome.NextApproverRole is { Length: > 0 } nextRole)
             {
@@ -148,7 +182,7 @@ public class CapitalCallService(
         }
 
         var priorStageName = ApprovalWorkflow.Reject(call, stages, actor, comment, clock.Today, clock.UtcNow);
-        await db.SaveChangesAsync(ct);
+        call.Version++;
         await audit.AppendAsync(user.Name, "Returned", "amber",
             $"Call {call.Ref} · returned to {priorStageName}", Quote(comment), ct);
         var priorRole = stages.First(s => s.Order == call.CurrentStage).ApproverRole;

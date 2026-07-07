@@ -36,6 +36,18 @@ public class CallAuditEntry
     public string Tone { get; set; } = "neutral";
 }
 
+/// <summary>
+/// An outstanding sign-off injected by an escalation rule. Each carries its own
+/// gate so rules with different stages never weaken each other: the call cannot
+/// advance from any stage at or past <see cref="GateStage"/> while pending.
+/// </summary>
+public class EscalationSignoff
+{
+    public string RuleId { get; set; } = "";
+    public string Role { get; set; } = "";
+    public int GateStage { get; set; }
+}
+
 public class CapitalCall
 {
     public string Id { get; set; } = "";
@@ -52,10 +64,13 @@ public class CapitalCall
     /// <summary>1-based against the workflow's ordered stages; the terminal stage means Completed.</summary>
     public int CurrentStage { get; set; } = 1;
     public CallStatus Status { get; set; } = CallStatus.InReview;
-    /// <summary>Roles injected by escalation rules that still owe a sign-off.</summary>
-    public List<string> PendingEscalations { get; set; } = [];
-    /// <summary>The stage the call may not advance past while escalation sign-offs are pending.</summary>
-    public int? EscalationGateStage { get; set; }
+    /// <summary>
+    /// Optimistic-concurrency token — services bump it on every workflow mutation so
+    /// concurrent approvals/rejections of the same call conflict instead of both committing.
+    /// </summary>
+    public int Version { get; set; }
+    /// <summary>Outstanding escalation sign-offs (empty once all have landed).</summary>
+    public List<EscalationSignoff> EscalationSignoffs { get; set; } = [];
     public List<CallAllocation> Allocations { get; set; } = [];
     public List<StageEvent> StageEvents { get; set; } = [];
     public List<CallDocument> Documents { get; set; } = [];

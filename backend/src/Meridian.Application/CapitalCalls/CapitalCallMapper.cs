@@ -18,7 +18,7 @@ public static class CapitalCallMapper
         call.CurrentStage,
         call.Status.ToDisplay(),
         call.Basis.ToDisplay(),
-        call.PendingEscalations,
+        call.EscalationSignoffs.Select(s => s.Role).Distinct().ToList(),
         call.Allocations
             .OrderByDescending(a => a.Amount).ThenBy(a => a.InvestorId)
             .Select(a => new CallAllocationDto(a.InvestorId, a.InvestorName, a.Commitment, a.Amount, a.WireStatus.ToString()))

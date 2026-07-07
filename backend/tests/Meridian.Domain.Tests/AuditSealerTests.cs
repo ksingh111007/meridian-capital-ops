@@ -48,4 +48,15 @@ public class AuditSealerTests
         var b = AuditSealer.ComputeSeal("something", at, "a", "b", "c", "d");
         Assert.NotEqual(a, b);
     }
+
+    [Fact]
+    public void Seal_DetectsFieldBoundaryShifts_EvenWithDelimitersInFreeText()
+    {
+        // Free-text comments land in Detail; shifting text across field boundaries
+        // must change the seal (length-prefixed encoding, not plain concatenation).
+        var at = new DateTime(2026, 7, 1, 9, 0, 0, DateTimeKind.Utc);
+        var a = AuditSealer.ComputeSeal(null, at, "actor|x", "action", "subject", "detail");
+        var b = AuditSealer.ComputeSeal(null, at, "actor", "|xaction", "subject", "detail");
+        Assert.NotEqual(a, b);
+    }
 }

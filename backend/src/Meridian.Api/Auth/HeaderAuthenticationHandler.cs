@@ -37,8 +37,10 @@ public sealed class HeaderAuthenticationHandler(
 
         var db = Context.RequestServices.GetRequiredService<IAppDbContext>();
         var user = await db.StaffUsers.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-        if (user is null || user.Status == "Disabled")
-            return AuthenticateResult.Fail("Unknown or disabled user.");
+        // Only Active staff may act: Invited users have not accepted their account
+        // yet and Disabled users are locked out — neither may authenticate.
+        if (user is null || user.Status != "Active")
+            return AuthenticateResult.Fail("Unknown or inactive user.");
 
         var identity = new ClaimsIdentity(
         [

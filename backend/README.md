@@ -78,15 +78,20 @@ consumers won't change. Two dev-only conveniences to know about:
 inbox (`NeedsAttentionService`) aggregates across calls/allocations/stages per
 caller. Writes always go through EF Core so change tracking + audit stay intact.
 
-Seed data = the frontend mock story (`StorySeed`: #C-2041 at Legal, #C-2039
-returned with two overdue wires, #D-119 with Blocked/Exception payouts, the
-staff roster and role matrix) plus deterministic **Bogus** volume data
-(`FakeDataSeed`, fixed seed → identical rows in every run and test host).
+Seed data mirrors the frontend mock story 1:1 (`StorySeed`: all 7 deals, all 6
+capital calls — #C-2041 at Legal, #C-2039 returned with two overdue wires,
+#C-2043/#C-2044 gated on CIO + Compliance sign-off — all 4 distributions incl.
+#D-119's Blocked/Exception payouts, the staff roster and role matrix) plus
+deterministic **Bogus** volume data (`FakeDataSeed`, fixed seed → identical
+rows in every run and test host). Keep it consistent with
+`meridian-capital-ops/src/mocks/*` when editing — the frontend swap depends on
+both sources telling the same story.
 
 ### AuthN / AuthZ
 
 - **Authentication** is a dev stand-in: `X-User-Id` header → seeded staff user
-  (`HeaderAuthenticationHandler`). It is one isolated handler behind the
+  (`HeaderAuthenticationHandler`). Only `Active` staff authenticate — Invited
+  and Disabled users are rejected. It is one isolated handler behind the
   standard ASP.NET authentication pipeline; replacing it with OIDC/Entra SSO is
   step 1 of [`docs/BACKEND_TODO.md`](../meridian-capital-ops/docs/BACKEND_TODO.md)
   and touches nothing else. **Do not ship the header scheme.**
@@ -104,10 +109,15 @@ Seeded users: `u-jchen` (Ops Analyst) · `u-mreyes` (Deal Lead) · `u-spatel`
 ### Cross-cutting guarantees
 
 - **Every mutation appends** to the global **hash-chained audit log**
-  (`seal_n = H(seal_{n-1} ‖ event_n)`); `GET /api/admin/audit` re-verifies the
-  chain on read (`kpis.chainValid`).
-- Approvals **notify the next approver** through the notification port (default
-  adapter writes an outbox row + log).
+  (`seal_n = H(seal_{n-1} ‖ event_n)`, culture-invariant, length-prefixed
+  fields); `GET /api/admin/audit` re-verifies the chain on read
+  (`kpis.chainValid`). Appends are transactional: `IAuditTrail` flushes the
+  scoped unit of work, so a mutation and its audit event(s) commit atomically —
+  services stage changes and never `SaveChanges` before appending.
+- Workflow mutations carry an optimistic-concurrency version: concurrent
+  approvals of the same call yield 409, never duplicate stage events. Capital
+  calls also queue investor notices (outbox rows) and **notify the next
+  approver** through the notification port.
 - Business errors are typed (`DomainException` Validation/NotFound/Forbidden/
   Conflict) and map to 400/404/403/409 ProblemDetails.
 - No `DateTime.Now` in business code — `IClock` everywhere.
@@ -119,7 +129,7 @@ via `POST /api/ops/jobs/{name}/run` (Admin:edit):
 
 | Job | What it does |
 | --- | --- |
-| `overdue-allocation-sweep` | Flips unpaid allocations past due date to `Overdue`, audits + notifies (BUSINESS_RULES § Overdue calls) |
+| `overdue-allocation-sweep` | Flips unpaid allocations past due date to `Overdue` (regardless of pipeline status — wire state is independent), audits + notifies in one atomic commit (BUSINESS_RULES § Overdue calls) |
 | `approval-sla-monitor` | Fires "Approval overdue" notifications for stages past their SLA (scaffold: no dedupe store yet) |
 | `custodian-feed-sync` | Pulls the custodian snapshot through the `ICustodianFeed` port — the recon auto-match engine plugs in here |
 

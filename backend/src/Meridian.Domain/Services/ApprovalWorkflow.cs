@@ -9,7 +9,8 @@ public sealed record ApprovalOutcome(
     bool Completed,
     string ActedStageName,
     string? NextStageName,
-    string? NextApproverRole);
+    string? NextApproverRole,
+    IReadOnlyList<string> AutoAdvancedStages);
 
 /// <summary>
 /// The due-diligence approval pipeline (BUSINESS_RULES.md § Due-diligence approval pipeline).
@@ -26,9 +27,9 @@ public static class ApprovalWorkflow
 
         // Escalation sign-off: an injected role (e.g. Compliance) approves without
         // owning the current stage and without advancing it.
-        if (call.PendingEscalations.Contains(actor.Role) && actor.Role != stage.ApproverRole)
+        if (call.EscalationSignoffs.Any(s => s.Role == actor.Role) && actor.Role != stage.ApproverRole)
         {
-            call.PendingEscalations.Remove(actor.Role);
+            call.EscalationSignoffs.RemoveAll(s => s.Role == actor.Role);
             call.AuditEntries.Add(new CallAuditEntry
             {
                 Title = $"Escalation sign-off — {actor.Role}",
@@ -37,17 +38,23 @@ public static class ApprovalWorkflow
                 Comment = comment,
                 Tone = "green",
             });
-            return new ApprovalOutcome(true, false, stage.Name, stage.Name, stage.ApproverRole);
+            return new ApprovalOutcome(true, false, stage.Name, stage.Name, stage.ApproverRole, []);
         }
 
         if (actor.Role != stage.ApproverRole && !actor.HasFullApprovals)
             throw DomainException.Forbidden($"Stage {stage.Order} ({stage.Name}) requires the {stage.ApproverRole} role.");
 
         // A stage approver who is also an injected escalation role clears their own entry.
-        call.PendingEscalations.Remove(actor.Role);
-        if (call.EscalationGateStage == stage.Order && call.PendingEscalations.Count > 0)
+        call.EscalationSignoffs.RemoveAll(s => s.Role == actor.Role);
+        // Each sign-off carries its own gate, so one rule can never weaken another's.
+        var blocking = call.EscalationSignoffs
+            .Where(s => stage.Order >= s.GateStage)
+            .Select(s => s.Role)
+            .Distinct()
+            .ToList();
+        if (blocking.Count > 0)
             throw DomainException.Conflict(
-                $"Escalation sign-off outstanding before the call can pass {stage.Name}: {string.Join(", ", call.PendingEscalations)}.");
+                $"Escalation sign-off outstanding before the call can pass {stage.Name}: {string.Join(", ", blocking)}.");
 
         MarkStage(call, stage.Order, StageState.Done, actor.Name, today, comment: comment);
         call.AuditEntries.Add(new CallAuditEntry
@@ -59,23 +66,36 @@ public static class ApprovalWorkflow
             Tone = "green",
         });
 
+        var autoAdvanced = new List<string>();
         var next = StageAt(stages, stage.Order + 1);
         while (next.AutoAdvance)
         {
             MarkStage(call, next.Order, StageState.Done, "System", today, note: "Auto");
+            call.AuditEntries.Add(new CallAuditEntry
+            {
+                Title = $"{next.Name} — completed", By = "System", At = now, Tone = "blue",
+            });
+            autoAdvanced.Add(next.Name);
             next = StageAt(stages, next.Order + 1);
         }
 
         call.CurrentStage = next.Order;
         if (next.Terminal)
         {
+            // The terminal stage gets its own done event and audit entry — a completed
+            // call's timeline and trail must show all nine stages (mock #C-2036 does).
+            MarkStage(call, next.Order, StageState.Done, "System", today);
+            call.AuditEntries.Add(new CallAuditEntry
+            {
+                Title = "Call completed", By = "System", At = now, Tone = "green",
+            });
             call.Status = CallStatus.Completed;
-            return new ApprovalOutcome(false, true, stage.Name, next.Name, null);
+            return new ApprovalOutcome(false, true, stage.Name, next.Name, null, autoAdvanced);
         }
 
         call.Status = CallStatus.InReview;
         MarkStage(call, next.Order, StageState.Current, actor: null, date: today, note: "In review");
-        return new ApprovalOutcome(false, false, stage.Name, next.Name, next.ApproverRole);
+        return new ApprovalOutcome(false, false, stage.Name, next.Name, next.ApproverRole, autoAdvanced);
     }
 
     public static string Reject(

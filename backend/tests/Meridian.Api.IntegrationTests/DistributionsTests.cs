@@ -11,11 +11,12 @@ public class DistributionsTests(MeridianApiFactory factory) : IClassFixture<Meri
     {
         var distributions = (await factory.CreateClientFor(Users.Counsel).GetJsonAsync("/api/distributions")).AsArray();
         var ids = distributions.Select(d => (string?)d!["id"]).ToList();
-        Assert.Contains("dist-118", ids);
-        Assert.Contains("dist-119", ids);
+        Assert.Equal(["dist-119", "dist-118", "dist-117", "dist-116"], ids);
     }
 
     [Theory]
+    [InlineData("dist-116")]
+    [InlineData("dist-117")]
     [InlineData("dist-118")]
     [InlineData("dist-119")]
     public async Task WaterfallInvariants_HoldExactly(string id)

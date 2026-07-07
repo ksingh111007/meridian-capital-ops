@@ -56,11 +56,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<CapitalCall>(e =>
         {
             e.HasKey(c => c.Id);
+            e.Property(c => c.Version).IsConcurrencyToken();
             e.OwnsMany(c => c.Allocations, a => Owned(a, "CallAllocations"));
             e.OwnsMany(c => c.StageEvents, a => Owned(a, "CallStageEvents"));
             e.OwnsMany(c => c.Documents, a => Owned(a, "CallDocuments"));
             e.OwnsMany(c => c.AuditEntries, a => Owned(a, "CallAuditEntries"));
-            e.Property(c => c.PendingEscalations).HasConversion(StringListConverter, StringListComparer);
+            e.OwnsMany(c => c.EscalationSignoffs, a => Owned(a, "CallEscalationSignoffs"));
         });
 
         modelBuilder.Entity<Distribution>(e =>

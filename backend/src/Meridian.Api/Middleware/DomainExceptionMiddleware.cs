@@ -1,5 +1,6 @@
 using Meridian.Domain;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Meridian.Api.Middleware;
 
@@ -11,6 +12,20 @@ public sealed class DomainExceptionMiddleware(RequestDelegate next)
         try
         {
             await next(context);
+        }
+        // Optimistic-concurrency conflicts and key collisions are retryable client
+        // conflicts, not server faults (covers DbUpdateConcurrencyException too).
+        catch (DbUpdateException) when (!context.Response.HasStarted)
+        {
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Conflict",
+                Detail = "The resource was modified concurrently. Reload and retry the request.",
+                Instance = context.Request.Path,
+            });
         }
         catch (DomainException exception) when (!context.Response.HasStarted)
         {

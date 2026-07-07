@@ -22,7 +22,7 @@ public static class FakeDataSeed
     private static readonly string[] FundIds = ["fund-i", "fund-ii", "fund-iii"];
 
     private static readonly string[] InvestorTypes =
-        ["Public pension", "Endowment", "Insurance", "Family office", "Sovereign wealth", "Asset manager"];
+        ["Public Pension", "Endowment", "Insurance", "Family Office", "Sovereign Wealth", "Asset Manager"];
 
     public static void Apply(AppDbContext db, int investors, int deals)
     {
