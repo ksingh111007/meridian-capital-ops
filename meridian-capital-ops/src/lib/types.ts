@@ -428,4 +428,15 @@ export interface CurrentUser {
   name: string;
   initials: string;
   role: string;
+  capabilities: Record<Module, Capability>;
+}
+
+/** GET /api/portal/session — allowed for every portal contact (unlike portal/account). */
+export interface PortalSession {
+  contactId: string;
+  contactName: string;
+  contactInitials: string;
+  investorId: string;
+  investor: string;
+  role: PortalContact["role"];
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ReconItem } from "@/lib/types";
 import { fmtDate, money, pct } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { ScreenHeader } from "@/components/shell/ScreenHeader";
 import { Button } from "@/components/ui/Button";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
@@ -47,11 +48,11 @@ export function ReconciliationScreen({ source, kpis, items: initial }: { source:
     if (!assigning) return;
     const target = assigning;
     setAssigning(null);
-    await fetch(`/api/reconciliation/${target.id}/assign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assignee }),
-    }).catch(() => null);
+    const { ok, error } = await postJson(`reconciliation/${target.id}/assign`, { assignee });
+    if (!ok) {
+      toast.push({ kind: "error", title: "Assignment failed", detail: error });
+      return;
+    }
     setItems((prev) => prev.map((it) => (it.id === target.id ? { ...it, assignee } : it)));
     toast.push({ kind: "success", title: `Break assigned to ${assignee}`, detail: target.description });
   }

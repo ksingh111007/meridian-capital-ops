@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Distribution, InvestorPayout, WaterfallTier } from "@/lib/types";
 import { money, pct } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { ScreenHeader } from "@/components/shell/ScreenHeader";
 import { Button } from "@/components/ui/Button";
 import { DataTable, Td, type Column } from "@/components/ui/DataTable";
@@ -46,7 +47,11 @@ export function DistributionsScreen({ distributions }: { distributions: Distribu
   const profitSplit = tier("4")?.lpShare ?? 0;
 
   async function retryWire() {
-    await fetch("/api/wires/wire-8847/retry", { method: "POST" }).catch(() => null);
+    const { ok, error } = await postJson("wires/wire-8847/retry");
+    if (!ok) {
+      toast.push({ kind: "error", title: "Wire retry failed", detail: error });
+      return;
+    }
     toast.push({ kind: "success", title: "Wire retry queued" });
   }
 

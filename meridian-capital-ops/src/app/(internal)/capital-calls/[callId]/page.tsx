@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCapitalCall, getCurrentUser, getUsersAndRoles, getWorkflow } from "@/lib/data";
+import { getCapitalCall, getCurrentUser, getWorkflow } from "@/lib/data";
 import { CallDetailScreen } from "@/screens/CallDetailScreen";
 
 export async function generateMetadata({ params }: { params: Promise<{ callId: string }> }): Promise<Metadata> {
@@ -12,11 +12,10 @@ export async function generateMetadata({ params }: { params: Promise<{ callId: s
 /** Screen 2b — row detail: major details, 9-stage DD pipeline, approve/reject, docs, allocations, audit. */
 export default async function CallDetailPage({ params }: { params: Promise<{ callId: string }> }) {
   const { callId } = await params;
-  const [call, user, { roles }, workflow] = await Promise.all([
-    getCapitalCall(callId), getCurrentUser(), getUsersAndRoles(), getWorkflow(),
+  const [call, user, workflow] = await Promise.all([
+    getCapitalCall(callId), getCurrentUser(), getWorkflow(),
   ]);
   if (!call) notFound();
-  const canApprove = roles.find((r) => r.name === user.role)?.capabilities.Approvals === "approve" ||
-    roles.find((r) => r.name === user.role)?.capabilities.Approvals === "full";
+  const canApprove = user.capabilities.Approvals === "approve" || user.capabilities.Approvals === "full";
   return <CallDetailScreen call={call} stages={workflow.stages} user={user} userCanApprove={canApprove} />;
 }

@@ -8,12 +8,13 @@
  * directly; the /api proxy routes wrap the same backend for client mutations).
  */
 import type {
-  AttentionItem, AuditEvent, CapitalCall, CashPosition, CurrentUser, Deal, DealDetail,
-  Distribution, Drawdown, EscalationRule, Fund, Integration, Investor, InvestorAccessConfig,
-  LegalEntity, NotificationRule, PortalAccount, PortalActivityRow, PortalDocument,
-  PortalIrInfo, PortalTaxDocument, PortfolioSummary, ReconItem, Role, ShareClass,
-  StaffUser, Wire, WorkflowStage,
+  AttentionItem, AuditEvent, Capability, CapitalCall, CashPosition, CurrentUser, Deal,
+  DealDetail, Distribution, Drawdown, EscalationRule, Fund, Integration, Investor,
+  InvestorAccessConfig, LegalEntity, Module, NotificationRule, PortalAccount,
+  PortalActivityRow, PortalDocument, PortalIrInfo, PortalSession, PortalTaxDocument,
+  PortfolioSummary, ReconItem, Role, ShareClass, StaffUser, Wire, WorkflowStage,
 } from "./types";
+import { MODULES } from "./types";
 import { apiFind, apiGet, USE_API } from "./api";
 
 import portfolioSummary from "@/mocks/portfolio-summary.json";
@@ -46,7 +47,12 @@ import portalContactJson from "@/mocks/portal-contact.json";
 // ---------- session ----------
 
 export async function getCurrentUser(): Promise<CurrentUser> {
-  return USE_API ? apiGet<CurrentUser>("me") : (meJson as CurrentUser);
+  if (USE_API) return apiGet<CurrentUser>("me");
+  // Mock mode: me.json carries no capability matrix — join its role against users.json roles.
+  const capabilities =
+    (usersJson.roles as Role[]).find((r) => r.name === meJson.role)?.capabilities ??
+    (Object.fromEntries(MODULES.map((m) => [m, "none"])) as Record<Module, Capability>);
+  return { ...meJson, capabilities };
 }
 
 // ---------- portfolio ----------
@@ -168,6 +174,20 @@ export async function getNeedsAttention(): Promise<AttentionItem[]> {
 
 export async function getPortalAccount(): Promise<PortalAccount> {
   return USE_API ? apiGet<PortalAccount>("portal/account") : (portalAccountJson as PortalAccount);
+}
+
+/** Lightweight identity for the portal shell — allowed for every contact role (incl. Tax-only). */
+export async function getPortalSession(): Promise<PortalSession> {
+  if (USE_API) return apiGet<PortalSession>("portal/session");
+  const account = portalAccountJson as PortalAccount;
+  return {
+    contactId: "pc-1",
+    contactName: account.contactName,
+    contactInitials: account.contactInitials,
+    investorId: account.investorId,
+    investor: account.investor,
+    role: "Primary",
+  };
 }
 
 export async function getPortalInvestments(): Promise<typeof portalInvestmentsJson> {

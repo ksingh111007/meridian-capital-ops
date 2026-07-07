@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { CapitalCall, CurrentUser, StageEvent, WorkflowStage } from "@/lib/types";
 import { daysUntil, fmtDate, money, pct } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { Breadcrumb, DocIcon } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
@@ -46,11 +47,11 @@ export function CallDetailScreen({
     if (!comment.trim() || !modal) return;
     const kind = modal;
     setModal(null);
-    await fetch(`/api/capital-calls/${call.id}/${kind}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ comment }),
-    }).catch(() => null);
+    const { ok, error } = await postJson(`capital-calls/${call.id}/${kind}`, { comment });
+    if (!ok) {
+      toast.push({ kind: "error", title: kind === "approve" ? "Approval failed" : "Return failed", detail: error });
+      return;
+    }
 
     const now = "Jul 05 09:45";
     if (kind === "approve") {

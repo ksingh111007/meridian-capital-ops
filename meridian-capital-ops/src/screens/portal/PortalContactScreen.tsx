@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PortalIrInfo } from "@/lib/types";
 import { fmtDate, TODAY } from "@/lib/format";
+import { postJson } from "@/lib/mutate";
 import { Button } from "@/components/ui/Button";
 import { Field, Select, TextArea, TextInput } from "@/components/ui/controls";
 import { Avatar, Card, DefRow } from "@/components/ui/primitives";
@@ -25,11 +26,11 @@ export function PortalContactScreen({ info }: { info: PortalIrInfo & { regarding
   const canSend = subject.trim().length > 0 && message.trim().length > 0;
 
   async function send() {
-    await fetch("/api/portal/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, regarding, message }),
-    }).catch(() => null);
+    const { ok, error } = await postJson("portal/messages", { subject, regarding, message });
+    if (!ok) {
+      toast.push({ kind: "error", title: "Message not sent", detail: error });
+      return;
+    }
     toast.push({
       kind: "success",
       title: "Message sent",

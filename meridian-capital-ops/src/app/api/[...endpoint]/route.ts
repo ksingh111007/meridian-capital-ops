@@ -66,6 +66,7 @@ const GET_ROUTES: Record<string, (params: string[]) => unknown> = {
   "admin/notification-rules": () => data.getNotificationRules(),
   "admin/audit": () => data.getAuditLog(),
   "admin/investor-access": () => data.getInvestorAccess(),
+  "portal/session": () => data.getPortalSession(),
   "portal/account": () => data.getPortalAccount(),
   "portal/investments": () => data.getPortalInvestments(),
   "portal/activity": () => data.getPortalActivity(),
