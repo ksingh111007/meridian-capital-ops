@@ -1,6 +1,6 @@
 # Workspace guide (read me first)
 
-Four things live in this repository:
+Five things live in this repository:
 
 1. **`meridian-capital-ops/`** — the product front-end: a Next.js 16 app for a
    private-credit fund-operations platform (capital calls, distributions,
@@ -19,7 +19,12 @@ Four things live in this repository:
    from the frontend mocks. **All database work happens here** — start with
    `database/README.md`; table files and seeds are generated (see its tools/),
    never hand-edited.
-4. **`project/` + `chats/` + root `README.md`** — the original Claude Design
+4. **`infra/`** — Azure infrastructure-as-code for the whole stack: Bicep
+   templates, `dev`/`prod` environment parameter files, per-component deploy
+   scripts, and GitHub Actions workflows. **All deployment/infra work happens
+   here** — start with `infra/README.md`. (Each app keeps its own
+   `Dockerfile` beside its code; everything Azure lives in `infra/`.)
+5. **`project/` + `chats/` + root `README.md`** — the original Claude Design
    wireframe handoff the app was built from. **Reference only — never edit.**
    The HTML prototypes are not production code; `project/support.js` must not
    be ported. The design's developer spec is

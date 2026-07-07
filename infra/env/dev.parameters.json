@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "baseName": { "value": "meridian" },
+    "environmentName": { "value": "dev" },
+    "appServicePlanSku": { "value": "B1" },
+    "databaseSkuName": { "value": "GP_S_Gen5_1" },
+    "sqlAdminLogin": { "value": "CHANGE_ME-entra-admin-group-name" },
+    "sqlAdminObjectId": { "value": "00000000-0000-0000-0000-000000000000" },
+    "sqlAdminPrincipalType": { "value": "Group" }
+  }
+}

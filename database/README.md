@@ -18,11 +18,12 @@ database/
 │   ├── SchemaExport/              # prints the EF model as a CREATE script (source of truth)
 │   ├── generate-tables.py         # CREATE script → temporal table files under src/
 │   └── generate-seed.mjs          # ../meridian-capital-ops/src/mocks/*.json → scripts/seed/
-├── profiles/Azure.publish.xml     # conservative sqlpackage publish profile
-└── infra/
-    ├── azure-sql.bicep            # Azure SQL server + serverless database (Entra-only auth)
-    └── github/deploy-database.yml # CI: build → drift check → sqlpackage publish
+└── profiles/Azure.publish.xml     # conservative sqlpackage publish profile
 ```
+
+Azure SQL itself (server + database, dev and prod) is provisioned by the
+top-level [`../infra`](../infra) folder, which also carries the deploy
+scripts and CI workflows for publishing this project's dacpac.
 
 ## Design
 
@@ -82,19 +83,16 @@ the EF model or the mocks and regenerate.
 cd database
 dotnet build Meridian.Database.sqlproj -c Release   # → bin/Release/Meridian.Database.dacpac
 
-# one-time infra (creates sql-<name>-<env> + the serverless "meridian" database)
-az deployment group create -g rg-meridian-dev -f infra/azure-sql.bicep \
-  -p baseName=meridian sqlAdminLogin=<entra-admin-group> sqlAdminObjectId=<objectId>
+# one-time infra: ../infra provisions the SQL server + database (with the rest
+# of the stack) per environment — see ../infra/README.md
+../infra/deploy.sh dev
 
 # deploy schema + seed (repeatable; publish profile blocks destructive changes)
-sqlpackage /Action:Publish \
-  /SourceFile:bin/Release/Meridian.Database.dacpac \
-  /Profile:profiles/Azure.publish.xml \
-  /TargetConnectionString:"Server=tcp:<sqlServerFqdn>,1433;Database=meridian;Authentication=Active Directory Default;Encrypt=True;"
+../infra/scripts/deploy-database.sh dev --allow-my-ip
 ```
 
-`infra/github/deploy-database.yml` is the CI version (build → seed drift check →
-publish); move it to `.github/workflows/` to activate.
+`../infra/github/deploy-database.yml` is the CI version (build → seed drift
+check → publish); move it to `.github/workflows/` to activate.
 
 ## Point the API at it
 
