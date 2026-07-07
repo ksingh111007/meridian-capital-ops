@@ -1,0 +1,28 @@
+# Admin + automation endpoints.
+# Audit needs Admin:view (u-pnair Compliance / u-admin); running jobs needs Admin:edit (u-admin).
+
+@host = http://localhost:8080
+
+### Hash-chained audit log (kpis.chainValid re-verifies the chain)
+GET {{host}}/api/admin/audit
+X-User-Id: u-pnair
+
+### Registered background jobs with next fire times
+GET {{host}}/api/ops/jobs
+X-User-Id: u-admin
+
+### Fire the overdue-allocation sweep on demand
+POST {{host}}/api/ops/jobs/overdue-allocation-sweep/run
+X-User-Id: u-admin
+
+### Fire the approval SLA monitor
+POST {{host}}/api/ops/jobs/approval-sla-monitor/run
+X-User-Id: u-admin
+
+### Fire the custodian feed sync (recon scaffold)
+POST {{host}}/api/ops/jobs/custodian-feed-sync/run
+X-User-Id: u-admin
+
+### RBAC negative check — Counsel has Admin: none → 403
+GET {{host}}/api/admin/audit
+X-User-Id: u-jokafor

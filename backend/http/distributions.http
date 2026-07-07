@@ -1,0 +1,16 @@
+# Distributions — waterfall ledger + per-investor payouts.
+
+@host = http://localhost:8080
+@user = u-jokafor
+
+### All distributions
+GET {{host}}/api/distributions
+X-User-Id: {{user}}
+
+### #D-119 — Paying; Oakmont is Blocked (no wire instructions), Granite is an Exception (wire W-8847)
+GET {{host}}/api/distributions/dist-119
+X-User-Id: {{user}}
+
+### #D-118 — Paid, tiers reconcile exactly to the distributable pool
+GET {{host}}/api/distributions/dist-118
+X-User-Id: {{user}}

@@ -1,0 +1,75 @@
+# Capital calls — the approval-pipeline vertical slice.
+# Works with the VS Code REST Client, Visual Studio, and Rider .http support.
+# Auth is the dev header scheme: X-User-Id = a seeded staff user id.
+#   u-jchen (Ops Analyst, stage 1) · u-mreyes (Deal Lead, 2) · u-spatel (CIO, 3)
+#   u-jokafor (Counsel, 4) · u-talvarez (Ops Manager, 5) · u-dwhitfield (Fund Accountant, 6)
+#   u-pnair (Compliance, escalation sign-off) · u-admin (Administrator, full)
+
+@host = http://localhost:8080
+@user = u-jokafor
+
+### Session user (drives approval affordances)
+GET {{host}}/api/me
+X-User-Id: {{user}}
+
+### Blotter — all capital calls
+GET {{host}}/api/capital-calls
+X-User-Id: {{user}}
+
+### Call detail — #C-2041 sits at Legal awaiting J. Okafor
+GET {{host}}/api/capital-calls/call-2041
+X-User-Id: {{user}}
+
+### Workflow config (9 stages + escalation rules)
+GET {{host}}/api/workflows/capital-calls
+X-User-Id: {{user}}
+
+### Needs-attention inbox (computed per caller via Dapper)
+GET {{host}}/api/needs-attention
+X-User-Id: {{user}}
+
+### Create a call (wizard 2c) — allocations must reconcile to the amount
+POST {{host}}/api/capital-calls
+X-User-Id: u-jchen
+Content-Type: application/json
+
+{
+  "dealId": "deal-atlas",
+  "amount": 12.30,
+  "dueDate": "2026-07-20",
+  "basis": "unfunded",
+  "allocations": [
+    { "investorId": "inv-redwood", "amount": 6.15 },
+    { "investorId": "inv-blueharbor", "amount": 6.15 }
+  ]
+}
+
+### Create a call > $20M — triggers the CIO + Compliance escalation
+POST {{host}}/api/capital-calls
+X-User-Id: u-jchen
+Content-Type: application/json
+
+{
+  "dealId": "deal-atlas",
+  "amount": 25.00,
+  "dueDate": "2026-07-28",
+  "basis": "unfunded",
+  "allocations": [
+    { "investorId": "inv-redwood", "amount": 10.00 },
+    { "investorId": "inv-cascade", "amount": 15.00 }
+  ]
+}
+
+### Approve the current stage (comment required; must be the stage's approver role)
+POST {{host}}/api/capital-calls/call-2041/approve
+X-User-Id: u-jokafor
+Content-Type: application/json
+
+{ "comment": "LPA §4.2 reviewed — clear to proceed" }
+
+### Reject → returns the call to the prior stage as Returned
+POST {{host}}/api/capital-calls/call-2041/reject
+X-User-Id: u-jokafor
+Content-Type: application/json
+
+{ "comment": "Allocation for Cascade needs rework" }
